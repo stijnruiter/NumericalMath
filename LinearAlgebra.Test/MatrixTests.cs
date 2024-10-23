@@ -105,6 +105,39 @@ internal class MatrixTests
         Assert.That(matrix.Row(1), Is.EqualTo(new RowVector<int>([4, 5, 6])));
     }
 
+    [Test]
+    public void AdditionSubtractionMatrix()
+    {
+        Matrix<int> M1 = new Matrix<int>(new int[,]
+        {
+            { 7, 3, 2 },
+            { 9, 8, 6 },
+        });
+        Matrix<int> M2 = new Matrix<int>(new int[,]
+        {
+            { 1, 2, 3 },
+            { 4, 5, 6 },
+        });
+
+        Matrix<int> M1PlusM2Result = new Matrix<int>(new int[,]
+        {
+            {  8,  5,  5 },
+            { 13, 13, 12 },
+        });
+
+        Matrix<int> M1MinusM2Result = new Matrix<int>(new int[,]
+        {
+            {  6,  1, -1 },
+            { 5, 3, 0 },
+        });
+
+        Assert.That(M1 + M2, Is.EqualTo(M1PlusM2Result));
+        Assert.That(M1 - M2, Is.EqualTo(M1MinusM2Result));
+
+        Assert.Throws<DimensionMismatchException>(() => { var _ = M1.Transpose() + M2; });
+        Assert.Throws<DimensionMismatchException>(() => { var _ = M1.Transpose() - M2; });
+    }
+
     [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.LinearSystemSets))]
     public void SolveMatrixVectorExtension(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {

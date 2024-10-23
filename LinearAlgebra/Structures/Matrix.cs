@@ -1,4 +1,5 @@
 ﻿using LinearAlgebra.Comparers;
+using LinearAlgebra.Exceptions;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -30,7 +31,7 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
 
     public Matrix(T[][] values)
     {
-        AssertIsRectangular(values);
+        Assertions.IsRectangular(values);
 
         RowCount = values.Length;
         ColumnCount = values[0].Length;
@@ -69,21 +70,6 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     public int RowCount { get; }
 
     public int ColumnCount { get; }
-
-    private static void AssertIsRectangular(T[][] values)
-    {
-        for (int i = 1; i < values.Length; i++)
-            if (values[i].Length != values[0].Length)
-                throw new ArgumentException($"Column length mismatch. Column {i} has length {values[i].Length}, Column 0 has length {values[0].Length}.");
-    }
-
-    private static bool IsRectangular(T[][] values)
-    {
-        for (int i = 1; i < values.Length; i++)
-            if (values[i].Length != values[0].Length)
-                return false;
-        return true;
-    }
 
     private static T[][] InitValues(int rows, int columns)
     {
@@ -184,4 +170,4 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
         }
         return result;
     }
-}
+}
