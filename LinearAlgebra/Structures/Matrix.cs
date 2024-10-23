@@ -124,6 +124,8 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     public static Matrix<T> operator -(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Subtraction(lhs, rhs);
 
     public static Matrix<T> operator *(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
+    public static ColumnVector<T> operator *(Matrix<T> lhs, ColumnVector<T> rhs) => Arithmetics.Product(lhs, rhs);
+    public static RowVector<T> operator *(RowVector<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
 
     public Matrix<T> Copy()
     {
@@ -161,6 +163,19 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
             trace += this[i, i];
         }
         return trace;
+    }
+
+    public Matrix<T> Transpose()
+    {
+        Matrix<T> result = new Matrix<T>(ColumnCount, RowCount);
+        for (int i = 0; i < RowCount; i++)
+        {
+            for (int j = 0; j < ColumnCount; j++)
+            {
+                result[j, i] = this[i, j];
+            }
+        }
+        return result;
     }
 
     public static Matrix<T> Zero(int size) => Zero(size, size);

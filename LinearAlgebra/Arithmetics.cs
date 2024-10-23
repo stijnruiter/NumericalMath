@@ -184,4 +184,30 @@ public static class Arithmetics
         return result;
     }
 
+    public static ColumnVector<T> Product<T>(Matrix<T> lhs, ColumnVector<T> rhs) where T : INumber<T>
+    {
+        if (lhs.ColumnCount != rhs.RowCount)
+            throw new DimensionMismatchException("RowVector and Matrix dimensions do not match", lhs.ColumnCount, rhs.RowCount);
+
+        ColumnVector<T> result = new ColumnVector<T>(lhs.RowCount);
+        for (int i = 0; i < lhs.RowCount; i++)
+        {
+            result[i] = lhs.Row(i) * rhs;
+        }
+        return result;
+    }
+
+    public static RowVector<T> Product<T>(RowVector<T> lhs, Matrix<T> rhs) where T : INumber<T>
+    {
+        if (lhs.ColumnCount != rhs.RowCount)
+            throw new DimensionMismatchException("RowVector and Matrix dimensions do not match", lhs.ColumnCount, rhs.RowCount);
+
+        RowVector<T> result = new RowVector<T>(rhs.ColumnCount);
+        for(int i = 0; i < rhs.ColumnCount; i++)
+        {
+            result[i] = lhs * rhs.Column(i);
+        }
+        return result;
+    }
+
 }

@@ -242,4 +242,66 @@ internal class MatrixTests
         Assert.That(nonSquare * otherNonSquare, Is.EqualTo(productResult));
     }
 
+    [Test]
+    public void RowMatrixMultiplication()
+    {
+        RowVector<int> rowVector = new RowVector<int>([1, 2, 3, 4, 5]);
+        Assert.That(rowVector * Matrix<int>.Identity(5), Is.EqualTo(rowVector));
+        Assert.Throws<DimensionMismatchException>(() => { var _ = rowVector * new Matrix<int>(3, 5); });
+        Assert.Throws<DimensionMismatchException>(() => { var _ = rowVector * Matrix<int>.Identity(4); });
+
+        Matrix<int> nonSquare = new Matrix<int>(new int[, ]
+        {
+            { 1,  2,  3 },
+            { 4,  5,  6 },
+            { 7,  8,  9 },
+            {10, 11, 12 },
+            {13, 14, 15 }
+        });
+        RowVector<int> expected = new RowVector<int>([135, 150, 165]);
+        Assert.That(rowVector * nonSquare, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void MatrixColumnMultiplication()
+    {
+        ColumnVector<int> columnVector = new ColumnVector<int>([1, 2, 3, 4, 5]);
+        Assert.That(Matrix<int>.Identity(5) * columnVector, Is.EqualTo(columnVector));
+        Assert.Throws<DimensionMismatchException>(() => { var _ = new Matrix<int>(5, 3) * columnVector; });
+        Assert.Throws<DimensionMismatchException>(() => { var _ = Matrix<int>.Identity(4) * columnVector; });
+
+        Matrix<int> nonSquare = new Matrix<int>(new int[,]
+        {
+            {  1,  2,  3,  4,  5 },
+            {  6,  7,  8,  9, 10 },
+            { 11, 12, 13, 14, 15 }
+        });
+        ColumnVector<int> expected = new ColumnVector<int>([55, 130, 205]);
+        Assert.That(nonSquare * columnVector, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Transpose()
+    {
+        Matrix<int> identity = Matrix<int>.Identity(5);
+        Assert.That(identity.Transpose(), Is.EqualTo(identity));
+
+        Matrix<int> nonSquare = new Matrix<int>(new int[,]
+        {
+            {  1,  2,  3,  4,  5 },
+            {  6,  7,  8,  9, 10 },
+            { 11, 12, 13, 14, 15 }
+        });
+        Matrix<int> nonSquareTransposed = new Matrix<int>(new int[,]
+        {
+            { 1,  6, 11 },
+            { 2,  7, 12 },
+            { 3,  8, 13 },
+            { 4,  9, 14 },
+            { 5, 10, 15 }
+        });
+
+        Assert.That(nonSquare.Transpose(), Is.EqualTo(nonSquareTransposed));
+        Assert.That(nonSquare.Transpose().Transpose(), Is.EqualTo(nonSquare));
+    }
 }
