@@ -1,4 +1,6 @@
 ﻿using LinearAlgebra.Structures;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LinearAlgebra.Test;
 
@@ -15,7 +17,7 @@ public class PluFactorizationTests
             Matrix<float> A = new Matrix<float>(Avalues);
             int[] pivots = [0, 1];
             int permutations = 0;
-            Matrix<float> lower = Matrix<float>.Identity<float>(2);
+            Matrix<float> lower = Matrix<float>.Identity(2);
             Matrix<float> upper = A.Copy();
             yield return new TestCaseData(A, pivots, permutations, lower, upper);
 

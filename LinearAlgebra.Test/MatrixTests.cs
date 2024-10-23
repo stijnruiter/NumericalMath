@@ -1,5 +1,8 @@
-﻿using LinearAlgebra.Exceptions;
+﻿using LinearAlgebra.Comparers;
+using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
+using System;
+using System.Collections.Generic;
 
 namespace LinearAlgebra.Test;
 
@@ -150,18 +153,18 @@ internal class MatrixTests
     public void SolveMatrixVectorUsingLUDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x1 = PluFactorizationOperations.SolveUsingDoolittleLU(A, b);
-        Assert.That(x1, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.AreApproxEquals(b, 5e-4f)));
+        Assert.That(x1, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-4f)));
 
 
         ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPLU(A, b, 1e-5f);
-        Assert.That(x2, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.AreApproxEquals(b, 5e-5f)));
+        Assert.That(x2, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     [TestCaseSource(nameof(LinearSystemSets))]
     public void SolveMatrixVector(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x = A.Solve(b);
-        Assert.That(x, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.AreApproxEquals(b, 5e-5f)));
+        Assert.That(x, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     public static IEnumerable<TestCaseData> MatrixPropertySets
@@ -204,7 +207,7 @@ internal class MatrixTests
     [Test]
     public void MatrixMatrixMultiplication()
     {
-        Matrix<int> identity = Matrix<int>.Identity<int>(3);
+        Matrix<int> identity = Matrix<int>.Identity(3);
         Assert.That(identity * identity, Is.EqualTo(identity));
 
         Matrix<int> nonSquare = new Matrix<int>(new int[,]
@@ -214,10 +217,10 @@ internal class MatrixTests
             {4, 5, 1, 5},
         });
 
-        Assert.Throws<DimensionMismatchException>(() => { var _ = nonSquare * Matrix<int>.Identity<int>(3); });
-        Assert.Throws<DimensionMismatchException>(() => { var _ = Matrix<int>.Identity<int>(4) * nonSquare; });
-        Assert.That(nonSquare * Matrix<int>.Identity<int>(4), Is.EqualTo(nonSquare));
-        Assert.That(Matrix<int>.Identity<int>(3) * nonSquare, Is.EqualTo(nonSquare));
+        Assert.Throws<DimensionMismatchException>(() => { var _ = nonSquare * Matrix<int>.Identity(3); });
+        Assert.Throws<DimensionMismatchException>(() => { var _ = Matrix<int>.Identity(4) * nonSquare; });
+        Assert.That(nonSquare * Matrix<int>.Identity(4), Is.EqualTo(nonSquare));
+        Assert.That(Matrix<int>.Identity(3) * nonSquare, Is.EqualTo(nonSquare));
 
 
         Matrix<int> otherNonSquare = new Matrix<int>(new int[,]

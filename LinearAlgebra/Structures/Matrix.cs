@@ -1,8 +1,9 @@
-﻿using System.Numerics;
-using System.Threading.Tasks;
+﻿using LinearAlgebra.Comparers;
+using System;
+using System.Linq;
+using System.Numerics;
 
 namespace LinearAlgebra.Structures;
-
 
 public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : INumber<T>
 {
@@ -108,7 +109,7 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
         if (other is null)
             return false;
 
-        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.SequenceEqual(other.values, new SequenceEqualityComparer<T>());
+        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.JaggedSequenceEqual(other.values);
     }
 
     public override string ToString()
@@ -123,11 +124,6 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     public static Matrix<T> operator -(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Subtraction(lhs, rhs);
 
     public static Matrix<T> operator *(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
-
-    //public static Matrix<T> operator *(T lhs, Matrix<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
-    //public static Matrix<T> operator *(Matrix<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
-
-    //public ColumnVector<T> Solve(ColumnVector<T> b) => MatrixOperations.SolveUsingLU(this, b);
 
     public Matrix<T> Copy()
     {
@@ -167,31 +163,17 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
         return trace;
     }
 
-    public static Matrix<T> Zero<T>(int size) where T : INumber<T> => Zero<T>(size, size);
+    public static Matrix<T> Zero(int size) => Zero(size, size);
 
-    public static Matrix<T> Zero<T>(int rowCount, int columnCount) where T : INumber<T> => new Matrix<T>(rowCount, columnCount);
+    public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount);
     
-    public static Matrix<T> Identity<T>(int size) where T : INumber<T>
+    public static Matrix<T> Identity(int size)
     {
-        Matrix<T> result = Zero<T>(size);
+        Matrix<T> result = Zero(size);
         for (var i = 0; i < size; i++)
         {
             result[i, i] = T.One;
         }
         return result;
     }
-}
-
-internal class SequenceEqualityComparer<T> : EqualityComparer<T[]> where T : INumber<T>
-{
-    public override bool Equals(T[]? x, T[]? y)
-    {
-        if (x is null && y is null)
-            return true;
-        if (x is null || y is null)
-            return false;
-        return x.SequenceEqual(y);
-    }
-
-    public override int GetHashCode(T[] obj) => obj.GetHashCode();
-}
+}

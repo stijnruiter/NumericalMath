@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
 
@@ -12,11 +13,11 @@ namespace LinearAlgebra;
 public static class Arithmetics
 {
 
-    private static T[] ElementwiseOperation<T>(T[] lhs, T[] rhs, Func<T, T, T> op) where T: INumber<T>
+    private static T[] ElementwiseOperation<T>(T[] lhs, T[] rhs, Func<T, T, T> op) where T : INumber<T>
     {
         Assertions.AreSameLength(lhs, rhs);
         T[] result = new T[lhs.Length];
-        for (var i  = 0; i < lhs.Length; i++)
+        for (var i = 0; i < lhs.Length; i++)
         {
             result[i] = op(lhs[i], rhs[i]);
         }
@@ -79,26 +80,26 @@ public static class Arithmetics
         return (RowVector<T>)result;
     }
 
-    public static ColumnVector<T> Subtraction<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T: INumber<T>
+    public static ColumnVector<T> Subtraction<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : INumber<T>
     {
         T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a - b);
         return (ColumnVector<T>)result;
     }
-    
+
     public static Matrix<T> Subtraction<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
     {
         T[][] result = ElementwiseOperation<T>(lhs.Elements, rhs.Elements, (a, b) => a - b);
         return new Matrix<T>(result);
     }
 
-    
+
     public static RowVector<T> ElementwiseProduct<T>(RowVector<T> lhs, RowVector<T> rhs) where T : INumber<T>
     {
         T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a * b);
         return (RowVector<T>)result;
     }
 
-    public static ColumnVector<T> ElementwiseProduct<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T: INumber<T>
+    public static ColumnVector<T> ElementwiseProduct<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : INumber<T>
     {
         T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a * b);
         return (ColumnVector<T>)result;
@@ -141,7 +142,7 @@ public static class Arithmetics
         return result;
     }
 
-    
+
     public static ColumnVector<T> ScalarProduct<T>(T scalar, ColumnVector<T> rhs) where T : INumber<T>
     {
         T[] result = ElementwiseOperation(scalar, rhs, (a, b) => a * b);
@@ -182,4 +183,5 @@ public static class Arithmetics
         }
         return result;
     }
+
 }

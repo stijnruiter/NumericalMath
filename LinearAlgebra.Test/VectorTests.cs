@@ -1,4 +1,5 @@
-﻿using LinearAlgebra.Exceptions;
+﻿using System;
+using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
 
 namespace LinearAlgebra.Test;
