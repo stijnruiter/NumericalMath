@@ -105,66 +105,17 @@ internal class MatrixTests
         Assert.That(matrix.Row(1), Is.EqualTo(new RowVector<int>([4, 5, 6])));
     }
 
-    public static IEnumerable<TestCaseData> LinearSystemSets
-    {
-        get
-        {
-            float[,] Avalues = new float[,] {{ 6, -7},
-                                             { 0,  3 }};
-            Matrix<float> A = new Matrix<float>(Avalues);
-            ColumnVector<float> b = new ColumnVector<float>([3, 4]);
-            ColumnVector<float> result = new ColumnVector<float>([37f / 18f, 4f / 3f]);
-            yield return new TestCaseData(A, b, result);
-
-            Avalues = new float[,] {{ 1, 2, 3},
-                                    { 3, 2, 1},
-                                    { 2, 1, 3}};
-            A = new Matrix<float>(Avalues);
-            b = new ColumnVector<float>([1, 2, 2]);
-            result = new ColumnVector<float>([0.75f, -0.25f, 0.25f]);
-            yield return new TestCaseData(A, b, result);
-
-
-            Avalues = new float[,] {{ 1.0f,   5.0f,  3.2f,  4.3f, 8.2f,  6.0f },
-                                    { 1.0f,   4.3f,  5.6f,  2.4f, 5.1f, -5.0f },
-                                    { 0.0f,   0.0f,  3.1f,  4.0f, 5.0f,  6.0f },
-                                    { 0.0f,  18.0f,  0.1f,  2.0f, 5.0f,  8.0f },
-                                    { 1.0f, -50.0f, -3.21f, 3.0f, 1.0f,  0.0f },
-                                    { 0.0f, - 2.0f,  3.1f,  4.0f, 0.0f,  0.0f }};
-
-            float[] bvalues = { 1.0f, 2.0f, 3.3f, 4.4f, 5.5f, 6.6f };
-            float[] results =
-            {
-                -10.2777f,
-                  0.214471f,
-                 -3.5016f,
-                  4.47097f,
-                  1.8482f,
-                 -2.16166f
-            };
-            A = new Matrix<float>(Avalues);
-            b = new ColumnVector<float>(bvalues);
-            result = new ColumnVector<float>(results);
-            yield return new TestCaseData(A, b, result);
-        }
-    }
-
-    [TestCaseSource(nameof(LinearSystemSets))]
-    public void SolveMatrixVectorUsingLUDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
-    {
-        ColumnVector<float> x1 = PluFactorizationOperations.SolveUsingDoolittleLU(A, b);
-        Assert.That(x1, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-4f)));
-
-
-        ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPLU(A, b, 1e-5f);
-        Assert.That(x2, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
-    }
-
-    [TestCaseSource(nameof(LinearSystemSets))]
-    public void SolveMatrixVector(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
+    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.LinearSystemSets))]
+    public void SolveMatrixVectorExtension(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x = A.Solve(b);
         Assert.That(x, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+    }
+
+    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]
+    public void InverseMatrixExtension(Matrix<float> A, Matrix<float> invA)
+    {
+        Assert.That(A.Inverse(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     public static IEnumerable<TestCaseData> MatrixPropertySets

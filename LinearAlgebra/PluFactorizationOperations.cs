@@ -129,7 +129,7 @@ public static class PluFactorizationOperations
             // Upper tiangle
             for (int j = i; j < A.ColumnCount; j++)
             {
-                sum = T.Zero;
+                sum = T.AdditiveIdentity;
                 for (int k = 0; k < i; k++)
                 {
                     sum += lu[i, k] * lu[k, j];
@@ -140,7 +140,7 @@ public static class PluFactorizationOperations
             // Lower triangle
             for (int j = i + 1; j < A.ColumnCount; j++)
             {
-                sum = T.Zero;
+                sum = T.AdditiveIdentity;
                 for (int k = 0; k < i; k++)
                 {
                     sum += lu[j, k] * lu[k, i];
@@ -160,9 +160,17 @@ public static class PluFactorizationOperations
     /// <returns>The determinant of A</returns>
     public static T PluDeterminant<T>(Matrix<T> A, T tolerance) where T : INumber<T>
     {
+        // P * A = L * U
+        // det(A) = det(P^{-1})det(L)det(U)
+        // P is the permutation matrix, thus P^{-1}=P^T
+
+        // Both L and U are triangular matrices, thus det(L) = prod(diag(L))
+        // det(L) = prod(diag(L)) = prod([1,1,1...]) = 1
+        // det(U) = prod(diag(U)) = u[0,0] * u[1,1] * u[2,2]*...
+        // det(P) = (-1)^(number of permutations) = (-1)^(permutations % 2)
         (Matrix<T> lu, int[] pivots, int permutations) = PluFactorization(A, tolerance);
 
-        T determinant = permutations % 2 == 0 ? T.One : -T.One;
+        T determinant = permutations % 2 == 0 ? T.MultiplicativeIdentity : -T.MultiplicativeIdentity;
         for (int i = 0; i < A.RowCount; i++)
         {
             determinant *= lu[i, i];
@@ -175,7 +183,7 @@ public static class PluFactorizationOperations
     /// Forward substitution for solving the system Ly=b, where L is a lower triangular matrix where the diagonal is 1. y and b are column vectors.
     /// </summary>
     /// <param name="L">Lower triangular matrix with diagonal 1.</param>
-    /// <param name="y">The right hand side column matrix</param>
+    /// <param name="b">The right hand side column matrix</param>
     /// <returns>Solution for y</returns>
     public static ColumnVector<T> ForwardSubstitution<T>(Matrix<T> L, ColumnVector<T> b) where T : INumber<T>
     {
@@ -183,7 +191,7 @@ public static class PluFactorizationOperations
         ColumnVector<T> y = new ColumnVector<T>(b.Length);
         for (int i = 0; i < b.Length; i++)
         {
-            sum = T.Zero;
+            sum = T.AdditiveIdentity;
             for (int k = 0; k < i; k++)
             {
                 sum += L[i, k] * y[k];
@@ -191,6 +199,31 @@ public static class PluFactorizationOperations
             y[i] = b[i] - sum;
         }
         return y;
+    }
+
+    /// <summary>
+    /// Forward substitution for solving the system Ly=b, where L is a lower triangular matrix where the diagonal is 1. y and b are column vectors.
+    /// </summary>
+    /// <param name="L">Lower triangular matrix with diagonal 1.</param>
+    /// <param name="B">The right hand side column matrix</param>
+    /// <returns>Solution for y</returns>
+    public static Matrix<T> ForwardSubstitution<T>(Matrix<T> L, Matrix<T> B) where T : INumber<T>
+    {
+        T sum;
+        Matrix<T> Y = new Matrix<T>(B.RowCount, B.ColumnCount);
+        for (int i = 0; i < B.RowCount; i++)
+        {
+            for (int j = 0; j < B.ColumnCount; j++)
+            {
+                sum = T.AdditiveIdentity;
+                for (int k = 0; k < i; k++)
+                {
+                    sum += L[i, k] * Y[k, j];
+                }
+                Y[i, j] = B[i, j] - sum;
+            }
+        }
+        return Y;
     }
 
     /// <summary>
@@ -206,7 +239,7 @@ public static class PluFactorizationOperations
         ColumnVector<T> x = new ColumnVector<T>(y.Length);
         for (int i = y.Length - 1; i >= 0; i--)
         {
-            sum = T.Zero;
+            sum = T.AdditiveIdentity;
             for (int k = i + 1; k < y.Length; k++)
             {
                 sum += U[i, k] * x[k];
@@ -217,6 +250,39 @@ public static class PluFactorizationOperations
         return x;
     }
 
+    /// <summary>
+    /// Backwards substitution for solving Ux=y, where U is an upper triangular matrix. x and y are column matrices.
+    /// </summary>
+    /// <param name="U">The upper matrix</param>
+    /// <param name="y">The right hand side column matrix</param>
+    /// <returns>Solution for x</returns>
+    public static Matrix<T> BackwardSubstitution<T>(Matrix<T> U, Matrix<T> Y) where T : INumber<T>
+    {
+        // Solve
+        T sum;
+        Matrix<T> X = new Matrix<T>(Y.RowCount, Y.ColumnCount);
+        for (int i = Y.RowCount - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < Y.ColumnCount; j++)
+            {
+                sum = T.AdditiveIdentity;
+                for (int k = i + 1; k < Y.RowCount; k++)
+                {
+                    sum += U[i, k] * X[k, j];
+                }
+
+                X[i, j] = (Y[i, j] - sum) / U[i, i];
+            }
+        }
+        return X;
+    }
+
+    /// <summary>
+    /// Solve the system Ax=b
+    /// </summary>
+    /// <param name="A">Lefthand side matrix</param>
+    /// <param name="b">Righthand side column vector</param>
+    /// <returns>The solution for x</returns>
     public static ColumnVector<T> SolveUsingDoolittleLU<T>(Matrix<T> A, ColumnVector<T> b) where T : INumber<T>
     {
         // LU decomposition: A = L U
@@ -231,6 +297,26 @@ public static class PluFactorizationOperations
         return x;
     }
 
+    /// <summary>
+    /// Solve the system AX=B
+    /// </summary>
+    /// <param name="A">Lefthand side matrix</param>
+    /// <param name="b">Righthand side matrix</param>
+    /// <returns>The solution for x</returns>
+    public static Matrix<T> SolveUsingDoolittleLU<T>(Matrix<T> A, Matrix<T> B) where T : INumber<T>
+    {
+        // LU decomposition: A = L U
+        Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
+
+        // Solve Ly=b
+        Matrix<T> y = ForwardSubstitution(lu, B);
+
+        // Solve Ux=y
+        Matrix<T> x = BackwardSubstitution(lu, y);
+
+        return x;
+    }
+
 
     public static ColumnVector<T> SolveUsingPLU<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : INumber<T>
     {
@@ -239,7 +325,7 @@ public static class PluFactorizationOperations
 
         // Ax = b <=> PAx = Pb = LUx
         ColumnVector<T> Pb = new ColumnVector<T>(pivots.Length);
-        for (var i = 0; i < pivots.Length; i++)
+        for (int i = 0; i < pivots.Length; i++)
         {
             Pb[i] = b[pivots[i]];
         }
@@ -251,5 +337,30 @@ public static class PluFactorizationOperations
         ColumnVector<T> x = BackwardSubstitution(lu, y);
 
         return x;
+    }
+
+
+    public static Matrix<T> SolveUsingPLU<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : INumber<T>
+    {
+        // LU decomposition: P A = L U
+        (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
+
+        // Ax = b <=> PAx = Pb = LUx
+        Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
+        for (int i = 0; i < Pb.RowCount; i++)
+        {
+            for (int j = 0; j < Pb.ColumnCount; j++)
+            {
+                Pb[i, j] = B[pivots[i], j];
+            }
+        }
+
+        // Solve LY=B
+        Matrix<T> Y = ForwardSubstitution(lu, Pb);
+
+        // Solve UX=Y
+        Matrix<T> X = BackwardSubstitution(lu, Y);
+
+        return X;
     }
 }

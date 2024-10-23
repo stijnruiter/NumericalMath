@@ -14,14 +14,7 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     {
         RowCount = rowCount;
         ColumnCount = columnCount;
-
-        // Initialize the rows
-        values = new T[rowCount][];
-        for (var i = 0; i < rowCount; i++)
-        {
-            // Init each row with {columnCount} elements
-            values[i] = new T[columnCount];
-        }
+        values = InitValues(rowCount, columnCount);
     }
 
     public Matrix(T[,] values) : this(values.GetLength(0), values.GetLength(1))
@@ -157,7 +150,7 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
 
     public T Trace()
     {
-        T trace = T.Zero;
+        T trace = T.AdditiveIdentity;
         for (int i = 0; i < RowCount; i++)
         {
             trace += this[i, i];
