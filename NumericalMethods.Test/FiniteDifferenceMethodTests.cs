@@ -22,40 +22,21 @@ public class FiniteDifferenceMethodTests
      */
     public void PoissonsEquation1D()
     {
-        float x1 = 0f;
-        float x2 = 1f;
-        
-        int nElements = 4;
-        int nNodes = nElements + 1;
+        Domain domain = new Domain(0, 1, 5);
+        double force(double x) => -6 * x;
 
-        float dx = (x2 - x1) / nElements;
-
-        float[] nodes = Enumerable.Range(0, nNodes).Select(i => i * dx).ToArray();
-        Assert.That(nodes.Length, Is.EqualTo(nNodes));
-
-        float force(float x) => -6 * x;
-
-        Matrix<float> A = new Matrix<float>(nNodes, nNodes);
-        for (int i = 1; i < nNodes - 1; i++)
-        {
-            A[i, i - 1] = -1 / dx / dx;
-            A[i, i    ] =  2 / dx / dx;
-            A[i, i + 1] = -1 / dx / dx;
-        }
-
-        ColumnVector<float> F = new ColumnVector<float>(nodes.Select(force).ToArray());
+        // u'' => Stencil becomes 1/h^2 [-1, 2, -1] 
+        Matrix<double> A = 1f / (domain.DeltaX * domain.DeltaX) * Matrix<double>.Tridiagonal(domain.NodeCount, -1, 2, -1);
+        ColumnVector<double> F = new ColumnVector<double>(domain.Nodes.Select(force).ToArray());
 
         // Apply Dirichlet condition at u(0) = 5
-        A[0, 0] = 1;
-        F[0] = 5;
-
+        domain.ApplyDirichletBoundaryConditionLeft(5, A, F);
         // Apply Dirichlet condition at u(1) = 3
-        A[nNodes - 1, nNodes - 1] = 1;
-        F[nNodes - 1] = 3;
+        domain.ApplyDirichletBoundaryConditionRight(3, A, F);
 
-        ColumnVector<float> U = A.Solve(F);
+        ColumnVector<double> U = A.Solve(F);
 
-        ColumnVector<float> expectedU = new(nodes.Select(x => x * x * x - 3 * x + 5).ToArray());
+        ColumnVector<double> expectedU = new(domain.Nodes.Select(x => x * x * x - 3 * x + 5).ToArray());
         Assert.That(U, Is.EqualTo(expectedU));
     }
 
@@ -75,35 +56,19 @@ public class FiniteDifferenceMethodTests
      */
     public void HelmholtzEquation()
     {
-        double x1 = 0;
-        double x2 = MathF.PI / 2;
-
-        int nElements = 200;
-        int nNodes = nElements + 1;
-        double dx = (x2 - x1) / nElements;
-        double[] nodes = Enumerable.Range(0, nNodes).Select(i => i * dx).ToArray();
-        Assert.That(nodes.Length, Is.EqualTo(nNodes));
-        
-        Matrix<double> A = new Matrix<double>(nNodes, nNodes);
-        for (int i = 1; i < nNodes - 1; i++)
-        {
-            A[i, i - 1] = 1 / dx / dx;
-            A[i, i] = (1 - 2 / dx / dx);
-            A[i, i + 1] = 1 / dx / dx;
-        }
-        ColumnVector<double> F = new ColumnVector<double>(nNodes);
+        Domain domain = new Domain(0, MathF.PI / 2, 201);
+        // u'' + u => Stencil becomes 1/h^2[1, -2, 1] + [0, 1, 0] = [1/h^2, 1-2/h^2, 1/h^2]
+        double one_h2 = 1d / domain.DeltaX / domain.DeltaX;
+        Matrix<double> A = Matrix<double>.Tridiagonal(domain.NodeCount, one_h2, 1 - 2 * one_h2, one_h2);
+        ColumnVector<double> F = ColumnVector<double>.Zero(domain.NodeCount);
 
         // Dirichlet boundary condition at u(0)    = 5
         // Dirichlet boundary condition at u(pi/2) = 0
-
-        A[0, 0] = 1;
-        F[0] = 5;
-
-        A[nNodes - 1, nNodes - 1] = 1;
-        F[nNodes - 1] = 0;
+        domain.ApplyDirichletBoundaryConditionLeft(5, A, F);
+        domain.ApplyDirichletBoundaryConditionRight(0, A, F);
 
         ColumnVector<double> U = A.Solve(F);
-        ColumnVector<double> expectedU = new(nodes.Select(x => 5 * Math.Cos(x)).ToArray());
+        ColumnVector<double> expectedU = new(domain.Nodes.Select(x => 5 * Math.Cos(x)).ToArray());
 
         Assert.That(U, Is.EqualTo(expectedU).Using<ColumnVector<double>>((a,b) => a.ApproxEquals(b, 1e-5)));
     }

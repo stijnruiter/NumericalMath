@@ -106,6 +106,9 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     public static ColumnVector<T> operator *(Matrix<T> lhs, ColumnVector<T> rhs) => Arithmetics.Product(lhs, rhs);
     public static RowVector<T> operator *(RowVector<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
 
+    public static Matrix<T> operator *(T lhs, Matrix<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
+    public static Matrix<T> operator *(Matrix<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
+
     public Matrix<T> Copy()
     {
         T[][] copy = new T[values.Length][];
@@ -164,10 +167,29 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
     public static Matrix<T> Identity(int size)
     {
         Matrix<T> result = Zero(size);
-        for (var i = 0; i < size; i++)
+        for (int i = 0; i < size; i++)
         {
             result[i, i] = T.One;
         }
+        return result;
+    }
+
+    public static Matrix<T> Tridiagonal(int size, T a_left, T a_center, T a_right)
+    {
+        Matrix<T> result = Matrix<T>.Zero(size);
+        for(int i = 0; i < size; i++)
+        {
+            if (i > 0)
+            {
+                result[i, i - 1] = a_left;
+            }    
+            result[i, i]     = a_center;
+            if (i < size - 1)
+            {
+                result[i, i + 1] = a_right;
+            }
+        }
+
         return result;
     }
 }

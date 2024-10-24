@@ -142,6 +142,11 @@ public static class Arithmetics
         return result;
     }
 
+    public static Matrix<T> ScalarProduct<T>(T scalar, Matrix<T> rhs) where T : INumber<T>
+    {
+        T[][] result = ElementwiseOperation(scalar, rhs.Elements, (a, b) => a * b);
+        return new Matrix<T>(result);
+    }
 
     public static ColumnVector<T> ScalarProduct<T>(T scalar, ColumnVector<T> rhs) where T : INumber<T>
     {

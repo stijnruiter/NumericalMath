@@ -51,4 +51,4 @@ public class ToleranceEqualityComparer<T> : EqualityComparer<T> where T : INumbe
     }
 
     public override int GetHashCode([DisallowNull] T obj) => obj.GetHashCode();
-}
+}

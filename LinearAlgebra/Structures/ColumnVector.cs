@@ -25,4 +25,6 @@ public class ColumnVector<T> : Vector<T> where T : INumber<T>
     public static ColumnVector<T> operator *(ColumnVector<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
 
     public static Matrix<T> operator *(ColumnVector<T> lhs, RowVector<T> rhs) => Arithmetics.OuterProduct(lhs, rhs);
+
+    public static ColumnVector<T> Zero(int size) => new ColumnVector<T>(size);
 }
