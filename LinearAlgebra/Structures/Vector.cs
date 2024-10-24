@@ -22,8 +22,8 @@ public abstract class Vector<T> : IRectanglarMatrix<T>, IEquatable<Vector<T>> wh
 
     public T this[int index]
     {
-        get { return values[index]; }
-        set { values[index] = value; }
+        get => values[index];
+        set => values[index] = value;
     }
 
     public bool Equals(Vector<T>? other)

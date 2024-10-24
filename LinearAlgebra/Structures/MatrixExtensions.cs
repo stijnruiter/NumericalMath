@@ -1,7 +1,26 @@
-﻿namespace LinearAlgebra.Structures;
+﻿using System;
+using System.Numerics;
+
+namespace LinearAlgebra.Structures;
 
 public static class MatrixExtensions
 {
+    private static Matrix<Tout> Convert<Tin, Tout>(this Matrix<Tin> matrix, Func<Tin, Tout> converter) where Tin : INumber<Tin> where Tout : INumber<Tout>
+    {
+        Matrix<Tout> result = new Matrix<Tout>(matrix.RowCount, matrix.ColumnCount);
+        for (int i = 0; i < matrix.RowCount; i++)
+        {
+            for (int j = 0; j < matrix.ColumnCount; j++)
+            {
+                result[i,j] = converter(matrix[i,j]);
+            }
+        }
+        return result;
+    }
+
+    public static Matrix<double> ToDoubles(this Matrix<float> matrix) => Convert(matrix, System.Convert.ToDouble);
+    public static Matrix<float> ToFloats(this Matrix<double> matrix) => Convert(matrix, System.Convert.ToSingle);
+
     public static ColumnVector<float> Solve(this Matrix<float> A, ColumnVector<float> b, float degenerateTolerance = Constants.DefaultFloatTolerance) => PluFactorizationOperations.SolveUsingPLU(A, b, degenerateTolerance);
     public static ColumnVector<double> Solve(this Matrix<double> A, ColumnVector<double> b, double degenerateTolerance = Constants.DefaultDoubleTolerance) => PluFactorizationOperations.SolveUsingPLU(A, b, degenerateTolerance);
 

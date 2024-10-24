@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace LinearAlgebra.Structures;
 
@@ -12,7 +13,24 @@ public class ColumnVector<T> : Vector<T> where T : INumber<T>
 
     public override int ColumnCount => 1;
 
-    public override T this[int rowIndex, int columnIndex] { get => this[columnIndex]; set => this[columnIndex] = value; }
+    public override T this[int rowIndex, int columnIndex]
+    {
+        get
+        {
+            if (columnIndex != 0)
+                throw new IndexOutOfRangeException();
+
+            return this[rowIndex];
+        }
+
+        set
+        {
+            if (columnIndex != 0)
+                throw new IndexOutOfRangeException();
+
+            this[rowIndex] = value;
+        }
+    }
 
     public RowVector<T> Transpose() => new RowVector<T>(values);
 

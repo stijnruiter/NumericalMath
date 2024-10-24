@@ -26,7 +26,7 @@ public class FiniteDifferenceMethodTests
         double force(double x) => -6 * x;
 
         // u'' => Stencil becomes 1/h^2 [-1, 2, -1] 
-        Matrix<double> A = 1f / (domain.DeltaX * domain.DeltaX) * Matrix<double>.Tridiagonal(domain.NodeCount, -1, 2, -1);
+        Matrix<double> A = Matrix<double>.Tridiagonal(domain.NodeCount, -1, 2, -1) * (1f / (domain.DeltaX * domain.DeltaX));
         ColumnVector<double> F = new ColumnVector<double>(domain.Nodes.Select(force).ToArray());
 
         // Apply Dirichlet condition at u(0) = 5
@@ -59,7 +59,7 @@ public class FiniteDifferenceMethodTests
         Domain domain = new Domain(0, MathF.PI / 2, 201);
         // u'' + u => Stencil becomes 1/h^2[1, -2, 1] + [0, 1, 0] = [1/h^2, 1-2/h^2, 1/h^2]
         double one_h2 = 1d / domain.DeltaX / domain.DeltaX;
-        Matrix<double> A = Matrix<double>.Tridiagonal(domain.NodeCount, one_h2, 1 - 2 * one_h2, one_h2);
+        Matrix<double> A = one_h2 * Matrix<double>.Tridiagonal(domain.NodeCount, 1, -2, 1) + Matrix<double>.Identity(domain.NodeCount);
         ColumnVector<double> F = ColumnVector<double>.Zero(domain.NodeCount);
 
         // Dirichlet boundary condition at u(0)    = 5

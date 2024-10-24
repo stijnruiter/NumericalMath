@@ -22,6 +22,8 @@ internal class VectorTests
         Assert.That(columnVector[2], Is.EqualTo(0));
         Assert.That(columnVector[3], Is.EqualTo(0));
         Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[4]; });
+        
+        Assert.That(columnVector.Equals(null), Is.False);
     }
 
     [Test]
@@ -38,6 +40,39 @@ internal class VectorTests
         Assert.That(columnVector[2], Is.EqualTo(3));
         Assert.That(columnVector[3], Is.EqualTo(4));
         Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[4]; });
+
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[0, 1]; });
+        Assert.That(columnVector[0, 0], Is.EqualTo(1));
+        Assert.That(columnVector[1, 0], Is.EqualTo(2));
+        Assert.That(columnVector[2, 0], Is.EqualTo(3));
+        Assert.That(columnVector[3, 0], Is.EqualTo(4));
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[4, 0]; });
+    }
+
+    [Test]
+    public void ColumnVectorMatrixIndexing()
+    {
+        ColumnVector<int> columnVector = new ColumnVector<int>([1, 2, 3, 4]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { columnVector[0, 1] = 1; });
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[0, 1]; });
+        Assert.Throws<IndexOutOfRangeException>(() => { columnVector[4, 0] = 1; });
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = columnVector[4, 0]; });
+
+        Assert.That(columnVector[0, 0], Is.EqualTo(1));
+        Assert.That(columnVector[1, 0], Is.EqualTo(2));
+        Assert.That(columnVector[2, 0], Is.EqualTo(3));
+        Assert.That(columnVector[3, 0], Is.EqualTo(4));
+
+        columnVector[0, 0] = 5;
+        columnVector[1, 0] = 6;
+        columnVector[2, 0] = 7;
+        columnVector[3, 0] = 8;
+
+        Assert.That(columnVector[0], Is.EqualTo(5));
+        Assert.That(columnVector[1], Is.EqualTo(6));
+        Assert.That(columnVector[2], Is.EqualTo(7));
+        Assert.That(columnVector[3], Is.EqualTo(8));
     }
 
     [Test]
@@ -54,6 +89,8 @@ internal class VectorTests
         Assert.That(rowVector[2], Is.EqualTo(0));
         Assert.That(rowVector[3], Is.EqualTo(0));
         Assert.Throws<IndexOutOfRangeException>(() => { int result = rowVector[4]; });
+
+        Assert.That(rowVector.Equals(null), Is.False);
     }
 
     [Test]
@@ -70,6 +107,32 @@ internal class VectorTests
         Assert.That(rowVector[2], Is.EqualTo(3));
         Assert.That(rowVector[3], Is.EqualTo(4));
         Assert.Throws<IndexOutOfRangeException>(() => { int result = rowVector[4]; });
+    }
+
+    [Test]
+    public void RowVectorMatrixIndexing()
+    {
+        RowVector<int> rowVector = new RowVector<int>([1, 2, 3, 4]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { rowVector[1, 0] = 1; });
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = rowVector[1, 0]; });
+        Assert.Throws<IndexOutOfRangeException>(() => { rowVector[0, 4] = 1; });
+        Assert.Throws<IndexOutOfRangeException>(() => { int result = rowVector[0, 4]; });
+
+        Assert.That(rowVector[0, 0], Is.EqualTo(1));
+        Assert.That(rowVector[0, 1], Is.EqualTo(2));
+        Assert.That(rowVector[0, 2], Is.EqualTo(3));
+        Assert.That(rowVector[0, 3], Is.EqualTo(4));
+
+        rowVector[0, 0] = 5;
+        rowVector[0, 1] = 6;
+        rowVector[0, 2] = 7;
+        rowVector[0, 3] = 8;
+
+        Assert.That(rowVector[0], Is.EqualTo(5));
+        Assert.That(rowVector[1], Is.EqualTo(6));
+        Assert.That(rowVector[2], Is.EqualTo(7));
+        Assert.That(rowVector[3], Is.EqualTo(8));
     }
 
     [Test]

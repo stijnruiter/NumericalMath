@@ -10,6 +10,19 @@ namespace LinearAlgebra.Test;
 internal class MatrixTests
 {
     [Test]
+    public void EmptyMatrix()
+    {
+        Matrix<int> empty = Matrix<int>.Zero(3);
+        Assert.That(empty, Is.EqualTo(new Matrix<int>(new int[,]
+        {
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+            { 0, 0, 0 },
+        })));
+        Assert.That(empty.Equals(null), Is.False);
+    }
+
+    [Test]
     public void Indexing()
     {
         Matrix<int> matrix = new Matrix<int>(5, 3);
@@ -148,7 +161,13 @@ internal class MatrixTests
     [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]
     public void InverseMatrixExtension(Matrix<float> A, Matrix<float> invA)
     {
-        Assert.That(A.Inverse(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(A.Inverse(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
+        Assert.That(A.ToDoubles().Inverse().ToFloats(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
+    }
+
+    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]
+    public void InverseMatrixExtensionDouble(Matrix<float> A, Matrix<float> invA)
+    {
     }
 
     public static IEnumerable<TestCaseData> MatrixPropertySets
@@ -159,14 +178,14 @@ internal class MatrixTests
                                                              { 0,  3}});
             float trace = 9f;
             float determinant = 18f;
-            yield return new TestCaseData(A, trace, determinant);
+            yield return new TestCaseData(A, trace, determinant, determinant);
 
             A = new Matrix<float>(new float[,] {{ 1, 2, 3},
                                                 { 3, 2, 1},
                                                 { 2, 1, 3}});
             trace = 6;
             determinant = -12;
-            yield return new TestCaseData(A, trace, determinant);
+            yield return new TestCaseData(A, trace, determinant, determinant);
 
 
             A = new Matrix<float>(new float[,]{ { 1.0f,   5.0f,  3.2f,  4.3f, 8.2f,  6.0f },
@@ -177,15 +196,18 @@ internal class MatrixTests
                                                 { 0.0f, - 2.0f,  3.1f,  4.0f, 0.0f,  0.0f }});
             trace = 11.4f;
             determinant = -12805.829f;
-            yield return new TestCaseData(A, trace, determinant);
+            double determinant2 = -12805.830597d;
+            yield return new TestCaseData(A, trace, determinant, determinant2);
         }
     }
 
     [TestCaseSource(nameof(MatrixPropertySets))]
-    public void MatrixProperties(Matrix<float> A, float trace, float determinant)
+    public void MatrixProperties(Matrix<float> A, float trace, float determinant, double determinant2)
     {
         Assert.That(A.Trace(), Is.EqualTo(trace).Within(1e-5f));
+        Assert.That(A.ToDoubles().Trace(), Is.EqualTo(trace).Within(1e-6d));
         Assert.That(A.Determinant(), Is.EqualTo(determinant).Within(1e-5f));
+        Assert.That(A.ToDoubles().Determinant(), Is.EqualTo(determinant2).Within(1e-6d));
     }
 
     [Test]
