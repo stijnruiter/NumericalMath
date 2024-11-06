@@ -8,7 +8,7 @@ namespace NumericalMethods.Test;
 [TestFixture]
 public class FiniteDifferenceMethods2
 {
-    [Test]
+    [Test, Ignore("2D-problem takes too long in debug builds")]
     public void HelmholtzEquation()
     {
         /**

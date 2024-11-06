@@ -91,7 +91,7 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
 
     public override string ToString()
     {
-        return $"Mat{ColumnCount}x{RowCount}{Environment.NewLine}{string.Join(",\r\n", values.Select(WriteRow))}";
+        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", values.Select(WriteRow))}";
     }
 
     private static string WriteRow(T[] row) => string.Join(", ", row.Select(v => $"{v,10:f5}"));

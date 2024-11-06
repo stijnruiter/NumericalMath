@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace NumericalMethods.Test;
 
+[TestFixture]
 public class FiniteDifferenceMethods1
 {
     [Test]
