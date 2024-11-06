@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace NumericalMethods.Test;
 
-public class FiniteDifferenceMethodTests
+public class FiniteDifferenceMethods1
 {
     [Test]
     /**

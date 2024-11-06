@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
 
@@ -97,7 +98,7 @@ public static class PluFactorizationOperations
                 permutations++;
             }
 
-            for (int j = i + 1; j < LU.RowCount; j++)
+            Parallel.For(i + 1, LU.RowCount, j =>
             {
                 // Gaussian elimination step using pivot i
                 LU[j, i] /= LU[i, i];
@@ -106,7 +107,7 @@ public static class PluFactorizationOperations
                 {
                     LU[j, k] -= LU[j, i] * LU[i, k];
                 }
-            }
+            });
         }
 
         return (LU, pivots, permutations);
@@ -171,11 +172,7 @@ public static class PluFactorizationOperations
         (Matrix<T> lu, int[] pivots, int permutations) = PluFactorization(A, tolerance);
 
         T determinant = permutations % 2 == 0 ? T.MultiplicativeIdentity : -T.MultiplicativeIdentity;
-        for (int i = 0; i < A.RowCount; i++)
-        {
-            determinant *= lu[i, i];
-        }
-
+        determinant *= DiagonalProduct(lu);
         return determinant;
     }
 
@@ -288,6 +285,9 @@ public static class PluFactorizationOperations
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
 
+        if (DiagonalProduct(lu) == T.Zero)
+            throw new NotInvertibleException(NonInvertibleReason.Singular);
+
         // Solve Ly=b
         ColumnVector<T> y = ForwardSubstitution(lu, b);
 
@@ -308,6 +308,9 @@ public static class PluFactorizationOperations
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
 
+        if (DiagonalProduct(lu) == T.Zero)
+            throw new NotInvertibleException(NonInvertibleReason.Singular);
+
         // Solve Ly=b
         Matrix<T> y = ForwardSubstitution(lu, B);
 
@@ -322,6 +325,9 @@ public static class PluFactorizationOperations
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
+
+        if (T.Abs(DiagonalProduct(lu)) <= tolerance)
+            throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
         ColumnVector<T> Pb = new ColumnVector<T>(pivots.Length);
@@ -344,9 +350,12 @@ public static class PluFactorizationOperations
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
+        
+        if (T.Abs(DiagonalProduct(lu)) <= tolerance)
+            throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
-        Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
+        Matrix<T> Pb = Matrix<T>.Zero(B.RowCount, B.ColumnCount);
         for (int i = 0; i < Pb.RowCount; i++)
         {
             for (int j = 0; j < Pb.ColumnCount; j++)
@@ -362,5 +371,15 @@ public static class PluFactorizationOperations
         Matrix<T> X = BackwardSubstitution(lu, Y);
 
         return X;
+    }
+
+    private static T DiagonalProduct<T>(Matrix<T> matrix) where T : INumber<T>
+    {
+        T product = T.MultiplicativeIdentity;
+        for(int i = 0; i < matrix.ColumnCount; i++)
+        {
+            product *= matrix[i, i];
+        }
+        return product;
     }
 }

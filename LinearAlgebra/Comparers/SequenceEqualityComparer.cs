@@ -16,4 +16,4 @@ public class SequenceEqualityComparer<T> : EqualityComparer<IEnumerable<T>>
     }
 
     public override int GetHashCode(IEnumerable<T> obj) => obj.GetHashCode();
-}
+}

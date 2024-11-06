@@ -71,6 +71,10 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
         for (var i = 0; i < rows; i++)
         {
             values[i] = new T[columns];
+            for (var j  = 0; j < columns; j++)
+            {
+                values[i][j] = T.Zero;
+            }
         }
         return values;
     }

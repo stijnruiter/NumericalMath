@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
@@ -213,6 +214,52 @@ public static class Arithmetics
             result[i] = lhs * rhs.Column(i);
         }
         return result;
+    }
+
+    public static IRectanglarMatrix<T> TensorProduct<T>(IRectanglarMatrix<T> left, IRectanglarMatrix<T> right) where T : INumber<T>
+    {
+        int rowCount = left.RowCount * right.RowCount;
+        int columnCount = left.ColumnCount * right.ColumnCount;
+        IRectanglarMatrix<T> result =
+            rowCount == 1 ? new RowVector<T>(columnCount) :
+            columnCount == 1 ? new ColumnVector<T>(rowCount) :
+            new Matrix<T>(rowCount, columnCount);
+
+        for (int i = 0; i < rowCount; i++)
+        {
+            for (int j = 0; j < columnCount; j++)
+            {
+                result[i, j] = left[i / right.RowCount, j / right.ColumnCount] * right[i % right.RowCount, j % right.ColumnCount];
+            }
+        }
+        return result;
+    }
+
+    public static T Norm2<T>(Structures.Vector<T> vector) where T : INumber<T>, IRootFunctions<T>
+    {
+        T result = T.AdditiveIdentity;
+
+        for (int i = 0; i < vector.Length; i++)
+        {
+            result += vector[i] * vector[i];
+        }
+        return T.Sqrt(result);
+    }
+
+    public static T Norm1<T>(Structures.Vector<T> vector) where T : INumber<T>, IRootFunctions<T>
+    {
+        T result = T.AdditiveIdentity;
+
+        for (int i = 0; i < vector.Length; i++)
+        {
+            result += T.Abs(vector[i]);
+        }
+        return result;
+    }
+
+    public static T? NormInf<T>(Structures.Vector<T> vector) where T : INumber<T>, IRootFunctions<T>
+    {
+        return ((T[])vector).Max(T.Abs);
     }
 
 }
