@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace LinearAlgebra.Structures;
 
-public class RowVector<T> : Vector<T> where T : INumber<T>
+public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 {
     public RowVector(int count) : base(count)
     {

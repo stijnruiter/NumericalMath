@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace LinearAlgebra.Structures;
 
-public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : INumber<T>
+public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
 {
     // Row-major Matrix
     protected T[] _values;

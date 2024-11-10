@@ -5,7 +5,7 @@ namespace LinearAlgebra.Structures;
 
 public static class MatrixExtensions
 {
-    private static Matrix<Tout> Convert<Tin, Tout>(this Matrix<Tin> matrix, Func<Tin, Tout> converter) where Tin : INumber<Tin> where Tout : INumber<Tout>
+    private static Matrix<Tout> Convert<Tin, Tout>(this Matrix<Tin> matrix, Func<Tin, Tout> converter) where Tin : struct, INumber<Tin> where Tout : struct, INumber<Tout>
     {
         Matrix<Tout> result = new Matrix<Tout>(matrix.RowCount, matrix.ColumnCount);
         for (int i = 0; i < matrix.RowCount; i++)

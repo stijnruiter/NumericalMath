@@ -9,7 +9,7 @@ namespace LinearAlgebra;
 public static class PluFactorizationOperations
 {
     // Extract lower triangle, assuming the diagonal should be 1
-    public static Matrix<T> ExtractLower<T>(Matrix<T> lu) where T : INumber<T>
+    public static Matrix<T> ExtractLower<T>(Matrix<T> lu) where T : struct, INumber<T>
     {
         Matrix<T> result = new Matrix<T>(lu.RowCount, lu.ColumnCount);
         for (var j = 0; j < lu.RowCount; j++)
@@ -24,7 +24,7 @@ public static class PluFactorizationOperations
     }
 
     // Extract upper triangle
-    public static Matrix<T> ExtractUpper<T>(Matrix<T> lu) where T : INumber<T>
+    public static Matrix<T> ExtractUpper<T>(Matrix<T> lu) where T : struct, INumber<T>
     {
         Matrix<T> result = new Matrix<T>(lu.RowCount, lu.ColumnCount);
         for (var j = 0; j < lu.RowCount; j++)
@@ -42,7 +42,7 @@ public static class PluFactorizationOperations
     /// </summary>
     /// <param name="matrix">The searchmatrix</param>
     /// <returns>The max abs value and its index</returns>
-    private static (T value, int index) GetAbsMaxElementInColumn<T>(Matrix<T> matrix, int columnIndex, int startIndex = 0) where T : INumber<T>
+    private static (T value, int index) GetAbsMaxElementInColumn<T>(Matrix<T> matrix, int columnIndex, int startIndex = 0) where T : struct, INumber<T>
     {
         // Start with first element
         int maxIndex = startIndex;
@@ -78,7 +78,7 @@ public static class PluFactorizationOperations
     /// <param name="tolerance">The minimum tolerance for a pivot element. Anything lower than the tolerance, and the matrix A is assumed to be degenerate.</param>
     /// <returns>The tuple containing the LU matrix, the Pivot elements and the number of row swaps</returns>
     /// <exception cref="DegenerateMatrixException">In case an empty pivot column is found during the computations.</exception>
-    public static (Matrix<T> LU, int[] Pivots, int Permutations) PluFactorization<T>(Matrix<T> A, T tolerance) where T:INumber<T>
+    public static (Matrix<T> LU, int[] Pivots, int Permutations) PluFactorization<T>(Matrix<T> A, T tolerance) where T : struct, INumber<T>
     {
         Matrix<T> LU = A.Copy();
         int permutations = 0;
@@ -120,7 +120,7 @@ public static class PluFactorizationOperations
     /// <typeparam name="T"></typeparam>
     /// <param name="A"></param>
     /// <returns></returns>
-    public static Matrix<T> LuDecompositionDoolittle<T>(Matrix<T> A) where T : INumber<T>
+    public static Matrix<T> LuDecompositionDoolittle<T>(Matrix<T> A) where T : struct, INumber<T>
     {
         Matrix<T> lu = new Matrix<T>(A.RowCount, A.ColumnCount);
         T sum;
@@ -159,7 +159,7 @@ public static class PluFactorizationOperations
     /// <param name="A">A</param>
     /// <param name="tolerance">Floating point tolerance for pivot values</param>
     /// <returns>The determinant of A</returns>
-    public static T PluDeterminant<T>(Matrix<T> A, T tolerance) where T : INumber<T>
+    public static T PluDeterminant<T>(Matrix<T> A, T tolerance) where T : struct, INumber<T>
     {
         // P * A = L * U
         // det(A) = det(P^{-1})det(L)det(U)
@@ -182,7 +182,7 @@ public static class PluFactorizationOperations
     /// <param name="L">Lower triangular matrix with diagonal 1.</param>
     /// <param name="b">The right hand side column matrix</param>
     /// <returns>Solution for y</returns>
-    public static ColumnVector<T> ForwardSubstitution<T>(Matrix<T> L, ColumnVector<T> b) where T : INumber<T>
+    public static ColumnVector<T> ForwardSubstitution<T>(Matrix<T> L, ColumnVector<T> b) where T : struct, INumber<T>
     {
         T sum;
         ColumnVector<T> y = new ColumnVector<T>(b.Length);
@@ -204,7 +204,7 @@ public static class PluFactorizationOperations
     /// <param name="L">Lower triangular matrix with diagonal 1.</param>
     /// <param name="B">The right hand side column matrix</param>
     /// <returns>Solution for y</returns>
-    public static Matrix<T> ForwardSubstitution<T>(Matrix<T> L, Matrix<T> B) where T : INumber<T>
+    public static Matrix<T> ForwardSubstitution<T>(Matrix<T> L, Matrix<T> B) where T : struct, INumber<T>
     {
         T sum;
         Matrix<T> Y = new Matrix<T>(B.RowCount, B.ColumnCount);
@@ -229,7 +229,7 @@ public static class PluFactorizationOperations
     /// <param name="U">The upper matrix</param>
     /// <param name="y">The right hand side column matrix</param>
     /// <returns>Solution for x</returns>
-    public static ColumnVector<T> BackwardSubstitution<T>(Matrix<T> U, ColumnVector<T> y) where T : INumber<T>
+    public static ColumnVector<T> BackwardSubstitution<T>(Matrix<T> U, ColumnVector<T> y) where T : struct, INumber<T>
     {
         // Solve 
         T sum;
@@ -253,7 +253,7 @@ public static class PluFactorizationOperations
     /// <param name="U">The upper matrix</param>
     /// <param name="y">The right hand side column matrix</param>
     /// <returns>Solution for x</returns>
-    public static Matrix<T> BackwardSubstitution<T>(Matrix<T> U, Matrix<T> Y) where T : INumber<T>
+    public static Matrix<T> BackwardSubstitution<T>(Matrix<T> U, Matrix<T> Y) where T : struct, INumber<T>
     {
         // Solve
         T sum;
@@ -280,7 +280,7 @@ public static class PluFactorizationOperations
     /// <param name="A">Lefthand side matrix</param>
     /// <param name="b">Righthand side column vector</param>
     /// <returns>The solution for x</returns>
-    public static ColumnVector<T> SolveUsingDoolittleLU<T>(Matrix<T> A, ColumnVector<T> b) where T : INumber<T>
+    public static ColumnVector<T> SolveUsingDoolittleLU<T>(Matrix<T> A, ColumnVector<T> b) where T : struct, INumber<T>
     {
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
@@ -303,7 +303,7 @@ public static class PluFactorizationOperations
     /// <param name="A">Lefthand side matrix</param>
     /// <param name="b">Righthand side matrix</param>
     /// <returns>The solution for x</returns>
-    public static Matrix<T> SolveUsingDoolittleLU<T>(Matrix<T> A, Matrix<T> B) where T : INumber<T>
+    public static Matrix<T> SolveUsingDoolittleLU<T>(Matrix<T> A, Matrix<T> B) where T : struct, INumber<T>
     {
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
@@ -321,7 +321,7 @@ public static class PluFactorizationOperations
     }
 
 
-    public static ColumnVector<T> SolveUsingPLU<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : INumber<T>
+    public static ColumnVector<T> SolveUsingPLU<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : struct, INumber<T>
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
@@ -346,7 +346,7 @@ public static class PluFactorizationOperations
     }
 
 
-    public static Matrix<T> SolveUsingPLU<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : INumber<T>
+    public static Matrix<T> SolveUsingPLU<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : struct, INumber<T>
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
@@ -373,7 +373,7 @@ public static class PluFactorizationOperations
         return X;
     }
 
-    private static T DiagonalProduct<T>(Matrix<T> matrix) where T : INumber<T>
+    private static T DiagonalProduct<T>(Matrix<T> matrix) where T : struct, INumber<T>
     {
         T product = T.MultiplicativeIdentity;
         for(int i = 0; i < matrix.ColumnCount; i++)

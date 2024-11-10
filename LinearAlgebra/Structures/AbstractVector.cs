@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace LinearAlgebra.Structures;
 
-public abstract class Vector<T> : IRectanglarMatrix<T>, IEquatable<Vector<T>> where T : INumber<T>
+public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<AbstractVector<T>> where T : struct, INumber<T>
 {
     protected T[] values;
     public int Length => values.Length;
@@ -13,12 +13,12 @@ public abstract class Vector<T> : IRectanglarMatrix<T>, IEquatable<Vector<T>> wh
 
     public abstract T this[int rowIndex, int columnIndex] { get; set; }
 
-    public Vector(int count)
+    public AbstractVector(int count)
     {
         values = new T[count];
     }
 
-    public Vector(T[] values) => this.values = values;
+    public AbstractVector(T[] values) => this.values = values;
 
     public T this[int index]
     {
@@ -26,7 +26,7 @@ public abstract class Vector<T> : IRectanglarMatrix<T>, IEquatable<Vector<T>> wh
         set => values[index] = value;
     }
 
-    public bool Equals(Vector<T>? other)
+    public bool Equals(AbstractVector<T>? other)
     {
         if (other is null)
             return false;
@@ -34,7 +34,7 @@ public abstract class Vector<T> : IRectanglarMatrix<T>, IEquatable<Vector<T>> wh
         return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.SequenceEqual(other.values);
     }
 
-    public static implicit operator T[](Vector<T> d) => d.values;
+    public static implicit operator T[](AbstractVector<T> d) => d.values;
 
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{string.Join(", ", values)}]";
 }

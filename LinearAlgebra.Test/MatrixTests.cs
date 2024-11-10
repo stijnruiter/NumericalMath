@@ -134,7 +134,7 @@ internal class MatrixTests
     public void SolveMatrixVectorExtension(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x = A.Solve(b);
-        Assert.That(x, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(x, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]

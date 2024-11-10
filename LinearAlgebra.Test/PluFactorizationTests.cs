@@ -159,11 +159,11 @@ public class PluFactorizationTests
     public void SolveMatrixVectorUsingLUDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x1 = PluFactorizationOperations.SolveUsingDoolittleLU(A, b);
-        Assert.That(x1, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-4f)));
+        Assert.That(x1, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-4f)));
 
 
         ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPLU(A, b, 1e-5f);
-        Assert.That(x2, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(x2, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     public static IEnumerable<TestCaseData> InverseMatricesSets
@@ -237,7 +237,7 @@ public class PluFactorizationTests
         ColumnVector<float> x = PluFactorizationOperations.SolveUsingPLU(A, b, Constants.DefaultFloatTolerance);
 
         Assert.That(x.RowCount, Is.EqualTo(n));
-        Assert.That(A * x, Is.EqualTo(b).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(A * x, Is.EqualTo(b).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     [TestCase(5, 5)]
@@ -272,7 +272,7 @@ public class PluFactorizationTests
 
         Assert.That(x.RowCount, Is.EqualTo(n));
         // Doolittle becomes less accurate due to many divisions, the larger the vector gets.
-        Assert.That(A * x, Is.EqualTo(b).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 1e-2f)));
+        Assert.That(A * x, Is.EqualTo(b).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 1e-2f)));
     }
 
     [TestCase(5, 5)]
@@ -293,7 +293,7 @@ public class PluFactorizationTests
         Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-2f)));
     }
 
-    private static Matrix<T> GenerateMatrix<T>(int  n, int m, Func<T> randomGenerator) where T : System.Numerics.INumber<T>
+    private static Matrix<T> GenerateMatrix<T>(int  n, int m, Func<T> randomGenerator) where T : struct, System.Numerics.INumber<T>
     {
         Matrix<T> A = new(n, m);
         for (int i = 0; i < n; i++)
@@ -306,7 +306,7 @@ public class PluFactorizationTests
         return A;
     }
 
-    private static ColumnVector<T> GenerateColumnVector<T>(int n, Func<T> randomGenerator) where T : System.Numerics.INumber<T>
+    private static ColumnVector<T> GenerateColumnVector<T>(int n, Func<T> randomGenerator) where T : struct, System.Numerics.INumber<T>
     {
         ColumnVector<T> A = new(n);
         for (int i = 0; i < n; i++)

@@ -12,7 +12,7 @@ public static class Assertions
             throw new DimensionMismatchException("Not the same length.", lhs.Length, rhs.Length);
     }
 
-    public static void AreSameSize<T>(Matrix<T> lhs, Matrix<T> rhs) where T: INumber<T>
+    public static void AreSameSize<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
         if (lhs.RowCount != rhs.RowCount)
             throw new DimensionMismatchException("Number of rows do not match.", lhs.RowCount, rhs.RowCount);

@@ -22,7 +22,7 @@ public struct Domain
         Nodes = Enumerable.Range(0, nodeCount).Select(i => i * dx).ToArray();
     }
 
-    public void ApplyDirichletBoundaryConditionLeft<T>(T value, Matrix<T> A, ColumnVector<T> F) where T : INumber<T>
+    public void ApplyDirichletBoundaryConditionLeft<T>(T value, Matrix<T> A, ColumnVector<T> F) where T : struct, INumber<T>
     {
         for (int i = 1; i < NodeCount; i++)
         {
@@ -32,7 +32,7 @@ public struct Domain
         F[0] = value;
     }
 
-    public void ApplyDirichletBoundaryConditionRight<T>(T value, Matrix<T> A, ColumnVector<T> F) where T : INumber<T>
+    public void ApplyDirichletBoundaryConditionRight<T>(T value, Matrix<T> A, ColumnVector<T> F) where T : struct, INumber<T>
     {
         for (int i = 0; i < NodeCount - 1; i++)
         {

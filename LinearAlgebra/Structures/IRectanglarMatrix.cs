@@ -2,7 +2,7 @@
 
 namespace LinearAlgebra.Structures;
 
-public interface IRectanglarMatrix<T> where T : INumber<T>
+public interface IRectanglarMatrix<T> where T : struct, INumber<T>
 {
     public int RowCount { get; }
     public int ColumnCount { get; }
