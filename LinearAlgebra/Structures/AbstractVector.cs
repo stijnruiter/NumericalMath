@@ -38,25 +38,9 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
 
     public static implicit operator T[](AbstractVector<T> d) => d.values;
 
-    public ReadOnlySpan<T> AsSpan() => values.AsSpan();
+    public ReadOnlySpan<T> AsReadOnlySpan() => values.AsSpan();
+    public Span<T> AsSpan() => values.AsSpan();
 
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{string.Join(", ", values)}]";
 
-    protected static T DotProduct<T>(ReadOnlySpan<T> lhs, ReadOnlySpan<T> rhs) where T : struct, INumber<T>
-    {
-        Assertions.AreSameLength(lhs, rhs);
-        T result = T.Zero;
-        ReadOnlySpan<Vector<T>> leftVec = MemoryMarshal.Cast<T, Vector<T>>(lhs);
-        ReadOnlySpan<Vector<T>> rightVec = MemoryMarshal.Cast<T, Vector<T>>(rhs);
-
-        for (int i = 0; i < leftVec.Length; i++)
-        {
-            result += Vector.Dot(leftVec[i], rightVec[i]);
-        }
-        for (int i = leftVec.Length * Vector<T>.Count; i < lhs.Length; i++)
-        {
-            result += lhs[i] * rhs[i];
-        }
-        return result;
-    }
 }

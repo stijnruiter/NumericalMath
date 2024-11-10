@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LinearAlgebra.Exceptions;
+using System;
 using System.Numerics;
 
 namespace LinearAlgebra.Structures;
@@ -40,12 +41,36 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static explicit operator RowVector<T>(T[] vector) => new RowVector<T>(vector);
 
-    public static RowVector<T> operator +(RowVector<T> lhs, RowVector<T> rhs) => Arithmetics.Addition(lhs, rhs);
-    public static RowVector<T> operator -(RowVector<T> lhs, RowVector<T> rhs) => Arithmetics.Subtraction(lhs, rhs);
+    public static RowVector<T> operator +(RowVector<T> lhs, RowVector<T> rhs)
+    {
+        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        RowVector<T> result = new RowVector<T>(lhs.Length);
+        VectorizationOps.Addition(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
 
-    public static RowVector<T> operator *(T lhs, RowVector<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
-    public static RowVector<T> operator *(RowVector<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
+    public static RowVector<T> operator -(RowVector<T> lhs, RowVector<T> rhs)
+    {
+        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        RowVector<T> result = new RowVector<T>(lhs.Length);
+        VectorizationOps.Subtraction(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
 
-    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => DotProduct(lhs.AsSpan(), rhs.AsSpan());
+    public static RowVector<T> operator *(T lhs, RowVector<T> rhs)
+    {
+        RowVector<T> result = new RowVector<T>(rhs.Length);
+        VectorizationOps.ScalarProduct(lhs, rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
+
+    public static RowVector<T> operator *(RowVector<T> lhs, T rhs)
+    {
+        RowVector<T> result = new RowVector<T>(lhs.Length);
+        VectorizationOps.ScalarProduct(rhs, lhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
+
+    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => VectorizationOps.DotProduct(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
 
 }

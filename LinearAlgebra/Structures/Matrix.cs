@@ -16,7 +16,8 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     public int ColumnCount { get; }
 
     public T[] Elements => _values;
-    public ReadOnlySpan<T> AsSpan() => _values;
+    public ReadOnlySpan<T> AsReadOnlySpan() => _values;
+    public Span<T> AsSpan() => _values;
 
 
     public Matrix(int rowCount, int columnCount, T[] values)

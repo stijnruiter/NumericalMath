@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LinearAlgebra.Exceptions;
+using System;
 using System.Numerics;
 
 namespace LinearAlgebra.Structures;
@@ -36,11 +37,35 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static explicit operator ColumnVector<T>(T[] vector) => new ColumnVector<T>(vector);
 
-    public static ColumnVector<T> operator +(ColumnVector<T> lhs, ColumnVector<T> rhs) => Arithmetics.Addition(lhs, rhs);
-    public static ColumnVector<T> operator -(ColumnVector<T> lhs, ColumnVector<T> rhs) => Arithmetics.Subtraction(lhs, rhs);
+    public static ColumnVector<T> operator +(ColumnVector<T> lhs, ColumnVector<T> rhs)
+    {
+        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
+        VectorizationOps.Addition(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
 
-    public static ColumnVector<T> operator *(T lhs, ColumnVector<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
-    public static ColumnVector<T> operator *(ColumnVector<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
+    public static ColumnVector<T> operator -(ColumnVector<T> lhs, ColumnVector<T> rhs)
+    {
+        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
+        VectorizationOps.Subtraction(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
+
+    public static ColumnVector<T> operator *(T lhs, ColumnVector<T> rhs)
+    {
+        ColumnVector<T> result = new ColumnVector<T>(rhs.Length);
+        VectorizationOps.ScalarProduct(lhs, rhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
+
+    public static ColumnVector<T> operator *(ColumnVector<T> lhs, T rhs)
+    {
+        ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
+        VectorizationOps.ScalarProduct(rhs, lhs.AsReadOnlySpan(), result.AsSpan());
+        return result;
+    }
 
     public static Matrix<T> operator *(ColumnVector<T> lhs, RowVector<T> rhs) => Arithmetics.OuterProduct(lhs, rhs);
 
