@@ -35,28 +35,6 @@ public static class Arithmetics
         return result;
     }
 
-    private static T[][] ElementwiseOperation<T>(T lhs, T[][] rhs, Func<T, T, T> op) where T : INumber<T>
-    {
-        T[][] result = new T[rhs.Length][];
-        for (var i = 0; i < rhs.Length; i++)
-        {
-            result[i] = ElementwiseOperation(lhs, rhs[i], op);
-        }
-        return result;
-    }
-
-    private static T[][] ElementwiseOperation<T>(T[][] lhs, T[][] rhs, Func<T, T, T> op) where T : INumber<T>
-    {
-        Assertions.AreSameLength(lhs, rhs);
-
-        T[][] result = new T[rhs.Length][];
-        for (var i = 0; i < rhs.Length; i++)
-        {
-            result[i] = ElementwiseOperation(lhs[i], rhs[i], op);
-        }
-        return result;
-    }
-
     public static RowVector<T> Addition<T>(RowVector<T> lhs, RowVector<T> rhs) where T : INumber<T>
     {
         T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a + b);
@@ -71,8 +49,9 @@ public static class Arithmetics
 
     public static Matrix<T> Addition<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
     {
-        T[][] result = ElementwiseOperation<T>(lhs.Elements, rhs.Elements, (a, b) => a + b);
-        return new Matrix<T>(result);
+        Assertions.AreSameSize(lhs, rhs);
+        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a + b);
+        return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static RowVector<T> Subtraction<T>(RowVector<T> lhs, RowVector<T> rhs) where T : INumber<T>
@@ -89,10 +68,10 @@ public static class Arithmetics
 
     public static Matrix<T> Subtraction<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
     {
-        T[][] result = ElementwiseOperation<T>(lhs.Elements, rhs.Elements, (a, b) => a - b);
-        return new Matrix<T>(result);
+        Assertions.AreSameSize(lhs, rhs);
+        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a - b);
+        return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
-
 
     public static RowVector<T> ElementwiseProduct<T>(RowVector<T> lhs, RowVector<T> rhs) where T : INumber<T>
     {
@@ -108,10 +87,9 @@ public static class Arithmetics
 
     public static Matrix<T> ElementwiseProduct<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
     {
-        T[][] result = ElementwiseOperation<T>(lhs.Elements, rhs.Elements, (a, b) => a * b);
-        return new Matrix<T>(result);
+        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a * b);
+        return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
-
 
     public static RowVector<T> ElementwiseDivision<T>(RowVector<T> lhs, RowVector<T> rhs) where T : INumber<T>
     {
@@ -127,8 +105,8 @@ public static class Arithmetics
 
     public static Matrix<T> ElementwiseDivision<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
     {
-        T[][] result = ElementwiseOperation<T>(lhs.Elements, rhs.Elements, (a, b) => a / b);
-        return new Matrix<T>(result);
+        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a / b);
+        return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
 
@@ -145,8 +123,8 @@ public static class Arithmetics
 
     public static Matrix<T> ScalarProduct<T>(T scalar, Matrix<T> rhs) where T : INumber<T>
     {
-        T[][] result = ElementwiseOperation(scalar, rhs.Elements, (a, b) => a * b);
-        return new Matrix<T>(result);
+        T[] result = ElementwiseOperation(scalar, rhs.Elements, (a, b) => a * b);
+        return new Matrix<T>(rhs.RowCount, rhs.ColumnCount, result);
     }
 
     public static ColumnVector<T> ScalarProduct<T>(T scalar, ColumnVector<T> rhs) where T : INumber<T>
@@ -166,12 +144,13 @@ public static class Arithmetics
     {
         Assertions.AreSameLength((T[])lhs, (T[])rhs);
 
-        T[][] results = new T[lhs.Length][];
+        Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
-            results[i] = ElementwiseOperation(lhs[i], rhs, (a, b) => a * b);
+            Span<T> resultRow = result.RowArray(i);
+            ElementwiseOperation(lhs[i], rhs, (a, b) => a * b).CopyTo(resultRow);
         }
-        return new Matrix<T>(results);
+        return result;
     }
 
     public static Matrix<T> Product<T>(Matrix<T> lhs, Matrix<T> rhs) where T : INumber<T>
@@ -209,7 +188,7 @@ public static class Arithmetics
             throw new DimensionMismatchException("RowVector and Matrix dimensions do not match", lhs.ColumnCount, rhs.RowCount);
 
         RowVector<T> result = new RowVector<T>(rhs.ColumnCount);
-        for(int i = 0; i < rhs.ColumnCount; i++)
+        for (int i = 0; i < rhs.ColumnCount; i++)
         {
             result[i] = lhs * rhs.Column(i);
         }

@@ -200,8 +200,8 @@ internal class VectorTests
         RowVector<int> rowVector1 = new RowVector<int>([1, 2, 3]);
         RowVector<int> rowVector2 = new RowVector<int>([4, 5, -6]);
 
-        Assert.That(columnVector * rowVector1, Is.EqualTo(new Matrix<int>([[4, 8, 12], [5, 10, 15], [6, 12, 18]])));
-        Assert.That(columnVector * rowVector2, Is.EqualTo(new Matrix<int>([[16, 20, -24], [20, 25, -30], [24, 30, -36]])));
+        Assert.That(columnVector * rowVector1, Is.EqualTo(new Matrix<int>(new int[,] { { 4, 8, 12 }, { 5, 10, 15 }, { 6, 12, 18 } })));
+        Assert.That(columnVector * rowVector2, Is.EqualTo(new Matrix<int>(new int[,] { { 16, 20, -24 }, { 20, 25, -30 }, { 24, 30, -36 } })));
     }
 
 }

@@ -27,3 +27,5 @@ Generated\ Files/
 
 # CodeCoverage results
 TestResults*/
+
+BenchmarkDotNet.Artifacts/

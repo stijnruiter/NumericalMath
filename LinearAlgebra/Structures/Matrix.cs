@@ -1,55 +1,72 @@
-﻿using LinearAlgebra.Comparers;
-using LinearAlgebra.Exceptions;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace LinearAlgebra.Structures;
 
-public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : INumber<T>
+public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : INumber<T>
 {
     // Row-major Matrix
-    protected T[][] values;
+    protected T[] _values;
+
+    public int RowCount { get; }
+
+    public int ColumnCount { get; }
+
+    public T[] Elements => _values;
+
+
+    public Matrix(int rowCount, int columnCount, T[] values)
+    {
+        RowCount = rowCount;
+        ColumnCount = columnCount;
+        _values = values;
+    }
 
     public Matrix(int rowCount, int columnCount)
     {
         RowCount = rowCount;
         ColumnCount = columnCount;
-        values = InitValues(rowCount, columnCount);
+        _values = new T[rowCount * columnCount];
+    }
+
+
+    public Matrix(int rowCount, int columnCount, T scalar) : this(rowCount, columnCount)
+    {
+        Array.Fill(_values, scalar);
     }
 
     public Matrix(T[,] values) : this(values.GetLength(0), values.GetLength(1))
     {
-        for (var i = 0; i < RowCount; i++)
-        {
-            for (var j = 0; j < ColumnCount; j++)
-            {
-                this[i, j] = values[i, j];
-            }
-        }
-    }
-
-    public Matrix(T[][] values)
-    {
-        Assertions.IsRectangular(values);
-
-        RowCount = values.Length;
-        ColumnCount = values[0].Length;
-        this.values = values;
+        // 2D array T[,] is row major stored, thus a direct copy is possible
+        Buffer.BlockCopy(values, 0, _values, 0, values.Length * Unsafe.SizeOf<T>());
     }
 
     public T this[int rowIndex, int columnIndex]
     {
         // Matrix is column-major oriented
-        get => values[rowIndex][columnIndex];
-        set => values[rowIndex][columnIndex] = value;
+        get
+        {
+            AssertIndexInRange(rowIndex, columnIndex);
+            return _values[(rowIndex * ColumnCount) + columnIndex];
+        }
+
+        set
+        {
+            AssertIndexInRange(rowIndex, columnIndex);
+            _values[(rowIndex * ColumnCount) + columnIndex] = value;
+        }
     }
 
     public ColumnVector<T> Column(int columnIndex) => (ColumnVector<T>)ColumnArray(columnIndex);
+
     public T[] ColumnArray(int columnIndex)
     {
-        T[] col = new T[RowCount];
+        AssertColumnInRange(columnIndex);
 
+        T[] col = new T[RowCount];
         for (int i = 0; i < RowCount; i++)
         {
             col[i] = this[i, columnIndex];
@@ -58,40 +75,25 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
         return col;
     }
 
-    public RowVector<T> Row(int rowIndex) => (RowVector<T>)RowArray(rowIndex);
-    public T[] RowArray(int rowIndex) => values[rowIndex];
-
-    public int RowCount { get; }
-
-    public int ColumnCount { get; }
-
-    private static T[][] InitValues(int rows, int columns)
+    public RowVector<T> Row(int rowIndex) => (RowVector<T>)RowArray(rowIndex).ToArray();
+    public Span<T> RowArray(int rowIndex)
     {
-        T[][] values = new T[rows][];
-        for (var i = 0; i < rows; i++)
-        {
-            values[i] = new T[columns];
-            for (var j  = 0; j < columns; j++)
-            {
-                values[i][j] = T.Zero;
-            }
-        }
-        return values;
+        AssertRowInRange(rowIndex);
+        return new Span<T>(_values, rowIndex * ColumnCount, ColumnCount);
     }
 
-    public T[][] Elements => values;
 
     public bool Equals(Matrix<T>? other)
     {
         if (other is null)
             return false;
 
-        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.JaggedSequenceEqual(other.values);
+        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && _values.SequenceEqual(other._values);
     }
 
     public override string ToString()
     {
-        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", values.Select(WriteRow))}";
+        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowArray(x).ToArray())))}";
     }
 
     private static string WriteRow(T[] row) => string.Join(", ", row.Select(v => $"{v,10:f5}"));
@@ -109,19 +111,16 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
 
     public Matrix<T> Copy()
     {
-        T[][] copy = new T[values.Length][];
-        for (int i = 0; i < copy.Length; i++)
-        {
-            copy[i] = (T[])values[i].Clone();
-        }
-        return new Matrix<T>(copy);
+        T[] copy = new T[_values.Length];
+        Array.Copy(_values, copy, _values.Length);
+        return new Matrix<T>(RowCount, ColumnCount, copy);
     }
 
     public void SwapRows(int row1, int row2)
     {
-        T[] temp = values[row2];
-        values[row2] = values[row1];
-        values[row1] = temp;
+        T[] temp = RowArray(row1).ToArray();
+        RowArray(row2).CopyTo(RowArray(row1));
+        temp.CopyTo(RowArray(row2));
     }
 
 
@@ -160,20 +159,20 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
 
     public static Matrix<T> Zero(int size) => Zero(size, size);
 
-    public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount);
+    public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.Zero);
 
     public static Matrix<T> Identity(int size) => Matrix<T>.Diagonal(size, T.One);
 
     public static Matrix<T> Tridiagonal(int size, T a_left, T a_center, T a_right)
     {
         Matrix<T> result = Matrix<T>.Zero(size);
-        for(int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++)
         {
             if (i > 0)
             {
                 result[i, i - 1] = a_left;
-            }    
-            result[i, i]     = a_center;
+            }
+            result[i, i] = a_center;
             if (i < size - 1)
             {
                 result[i, i + 1] = a_right;
@@ -191,5 +190,23 @@ public class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : I
             result[i, i] = diagonal;
         }
         return result;
+    }
+
+    private void AssertIndexInRange(int i, int j)
+    {
+        if (i < 0 || j < 0 || i >= RowCount|| j >= ColumnCount)
+            throw new IndexOutOfRangeException($"({i},{j}) not an index in {ColumnCount}x{RowCount} matrix.");
+    }
+
+    private void AssertRowInRange(int i)
+    {
+        if (i < 0 || i >= RowCount)
+            throw new IndexOutOfRangeException($"Row {i} not in {ColumnCount}x{RowCount} matrix.");
+    }
+
+    private void AssertColumnInRange(int j)
+    {
+        if (j < 0 || j >= ColumnCount)
+            throw new IndexOutOfRangeException($"Column {j} not in {ColumnCount}x{RowCount} matrix.");
     }
 }

@@ -1,9 +1,9 @@
-﻿using LinearAlgebra.Structures;
-using LinearAlgebra.Comparers;
+﻿using LinearAlgebra.Comparers;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework.Internal;
 using System;
+using LinearAlgebra.Structures;
 
 namespace LinearAlgebra.Test;
 

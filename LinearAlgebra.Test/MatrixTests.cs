@@ -36,27 +36,6 @@ internal class MatrixTests
         Assert.Throws<IndexOutOfRangeException>(delegate { var x = matrix[2, 4]; });
     }
 
-    [Test]
-    public void AssigningJaggedArray()
-    {
-        int[] row1 = [1, 2, 3];
-        int[] row2 = [4, 5, 6];
-
-        int[][] values = [row1, row2];
-        Matrix<int> matrix = new Matrix<int>(values);
-
-        Assert.That(matrix.RowCount, Is.EqualTo(2));
-        Assert.That(matrix.ColumnCount, Is.EqualTo(3));
-
-        Assert.That(matrix[0, 0], Is.EqualTo(1));
-        Assert.That(matrix[0, 1], Is.EqualTo(2));
-        Assert.That(matrix[0, 2], Is.EqualTo(3));
-
-        Assert.That(matrix[1, 0], Is.EqualTo(4));
-        Assert.That(matrix[1, 1], Is.EqualTo(5));
-        Assert.That(matrix[1, 2], Is.EqualTo(6));
-    }
-
 
     [Test]
     public void AssigningMultiDimensionalArray()
@@ -79,14 +58,14 @@ internal class MatrixTests
     [Test]
     public void ColumnRowPropertyJagged()
     {
-        Matrix<int> matrix = new Matrix<int>([[1, 2, 3], [4, 5, 6]]);
+        Matrix<int> matrix = new Matrix<int>(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } });
 
         Assert.That(matrix.ColumnArray(0), Is.EqualTo(new int[] { 1, 4 }));
         Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
         Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
 
-        Assert.That(matrix.RowArray(0), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowArray(1), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.RowArray(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowArray(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
         Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
         Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));
@@ -107,8 +86,8 @@ internal class MatrixTests
         Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
         Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
 
-        Assert.That(matrix.RowArray(0), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowArray(1), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.RowArray(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowArray(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
         Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
         Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));
@@ -155,7 +134,7 @@ internal class MatrixTests
     public void SolveMatrixVectorExtension(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
         ColumnVector<float> x = A.Solve(b);
-        Assert.That(x, Is.EqualTo(result).Using<Structures.Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(x, Is.EqualTo(result).Using<Vector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]

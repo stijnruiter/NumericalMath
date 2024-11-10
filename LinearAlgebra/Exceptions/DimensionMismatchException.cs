@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LinearAlgebra.Structures;
+using System;
+using System.Numerics;
 
 namespace LinearAlgebra.Exceptions;
 
@@ -10,16 +12,13 @@ public static class Assertions
             throw new DimensionMismatchException("Not the same length.", lhs.Length, rhs.Length);
     }
 
-    public static void AreSameLength<T>(T[][] lhs, T[][] rhs)
+    public static void AreSameSize<T>(Matrix<T> lhs, Matrix<T> rhs) where T: INumber<T>
     {
-        if (lhs.Length != rhs.Length)
-            throw new DimensionMismatchException("Number of rows do not match.", lhs.Length, rhs.Length);
+        if (lhs.RowCount != rhs.RowCount)
+            throw new DimensionMismatchException("Number of rows do not match.", lhs.RowCount, rhs.RowCount);
 
-        for (var i = 0; i < lhs.Length; i++)
-        {
-            if (lhs[i].Length != rhs[i].Length)
-                throw new DimensionMismatchException($"Number of elements in row {i} do not match.", lhs[i].Length, rhs[i].Length);
-        }
+        if (lhs.ColumnCount != rhs.ColumnCount)
+            throw new DimensionMismatchException("Number of columns do not match.", lhs.ColumnCount, rhs.ColumnCount);
     }
 
     public static void IsRectangular<T>(T[][] values)

@@ -12,14 +12,14 @@ public static class MatrixExtensions
         {
             for (int j = 0; j < matrix.ColumnCount; j++)
             {
-                result[i,j] = converter(matrix[i,j]);
+                result[i, j] = converter(matrix[i, j]);
             }
         }
         return result;
     }
 
-    public static Matrix<double> ToDoubles(this Matrix<float> matrix) => Convert(matrix, System.Convert.ToDouble);
-    public static Matrix<float> ToFloats(this Matrix<double> matrix) => Convert(matrix, System.Convert.ToSingle);
+    public static Matrix<double> ToDoubles(this Matrix<float> matrix) => matrix.Convert(System.Convert.ToDouble);
+    public static Matrix<float> ToFloats(this Matrix<double> matrix) => matrix.Convert(System.Convert.ToSingle);
 
     public static ColumnVector<float> Solve(this Matrix<float> A, ColumnVector<float> b, float degenerateTolerance = Constants.DefaultFloatTolerance) => PluFactorizationOperations.SolveUsingPLU(A, b, degenerateTolerance);
     public static ColumnVector<double> Solve(this Matrix<double> A, ColumnVector<double> b, double degenerateTolerance = Constants.DefaultDoubleTolerance) => PluFactorizationOperations.SolveUsingPLU(A, b, degenerateTolerance);
