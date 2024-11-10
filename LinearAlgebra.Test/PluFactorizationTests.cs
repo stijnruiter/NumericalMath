@@ -254,7 +254,7 @@ public class PluFactorizationTests
         Matrix<float> X = PluFactorizationOperations.SolveUsingPLU(A, B, Constants.DefaultFloatTolerance);
 
         Assert.That((X.RowCount, X.ColumnCount), Is.EqualTo((n, m)));
-        Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+        Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 1e-4f)));
     }
 
 

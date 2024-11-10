@@ -13,8 +13,7 @@ namespace LinearAlgebra;
 /// </summary>
 public static class Arithmetics
 {
-
-    private static T[] ElementwiseOperation<T>(T[] lhs, T[] rhs, Func<T, T, T> op) where T : struct, INumber<T>
+    private static T[] ElementwiseOperation<T>(ReadOnlySpan<T> lhs, ReadOnlySpan<T> rhs, Func<T, T, T> op) where T : struct, INumber<T>
     {
         Assertions.AreSameLength(lhs, rhs);
         T[] result = new T[lhs.Length];
@@ -25,7 +24,7 @@ public static class Arithmetics
         return result;
     }
 
-    private static T[] ElementwiseOperation<T>(T lhs, T[] rhs, Func<T, T, T> op) where T : struct, INumber<T>
+    private static T[] ElementwiseOperation<T>(T lhs, ReadOnlySpan<T> rhs, Func<T, T, T> op) where T : struct, INumber<T>
     {
         T[] result = new T[rhs.Length];
         for (var i = 0; i < rhs.Length; i++)
@@ -37,163 +36,101 @@ public static class Arithmetics
 
     public static RowVector<T> Addition<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a + b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a + b);
         return (RowVector<T>)result;
     }
 
     public static ColumnVector<T> Addition<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a + b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a + b);
         return (ColumnVector<T>)result;
-    }
-
-    public static Matrix<T> Addition<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
-    {
-        Assertions.AreSameSize(lhs, rhs);
-        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a + b);
-        return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static RowVector<T> Subtraction<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a - b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a - b);
         return (RowVector<T>)result;
     }
 
     public static ColumnVector<T> Subtraction<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a - b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a - b);
         return (ColumnVector<T>)result;
     }
 
     public static Matrix<T> Subtraction<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
         Assertions.AreSameSize(lhs, rhs);
-        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a - b);
+        T[] result = ElementwiseOperation(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a - b);
         return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static RowVector<T> ElementwiseProduct<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a * b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a * b);
         return (RowVector<T>)result;
     }
 
     public static ColumnVector<T> ElementwiseProduct<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a * b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a * b);
         return (ColumnVector<T>)result;
     }
 
     public static Matrix<T> ElementwiseProduct<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a * b);
+        T[] result = ElementwiseOperation(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a * b);
         return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static RowVector<T> ElementwiseDivision<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a / b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a / b);
         return (RowVector<T>)result;
     }
 
     public static ColumnVector<T> ElementwiseDivision<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs, rhs, (a, b) => a / b);
+        T[] result = ElementwiseOperation<T>(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a / b);
         return (ColumnVector<T>)result;
     }
 
     public static Matrix<T> ElementwiseDivision<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(lhs.Elements, rhs.Elements, (a, b) => a / b);
+        T[] result = ElementwiseOperation(lhs.AsSpan(), rhs.AsSpan(), (a, b) => a / b);
         return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
 
-    public static T DotProduct<T>(RowVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
-    {
-        Assertions.AreSameLength((T[])lhs, (T[])rhs);
-        T result = T.Zero;
-        for (var i = 0; i < lhs.Length; i++)
-        {
-            result += lhs[i] * rhs[i];
-        }
-        return result;
-    }
 
-    public static Matrix<T> ScalarProduct<T>(T scalar, Matrix<T> rhs) where T : struct, INumber<T>
-    {
-        T[] result = ElementwiseOperation(scalar, rhs.Elements, (a, b) => a * b);
-        return new Matrix<T>(rhs.RowCount, rhs.ColumnCount, result);
-    }
 
     public static ColumnVector<T> ScalarProduct<T>(T scalar, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(scalar, rhs, (a, b) => a * b);
+        T[] result = ElementwiseOperation(scalar, rhs.AsSpan(), (a, b) => a * b);
         return (ColumnVector<T>)result;
     }
 
     public static RowVector<T> ScalarProduct<T>(T scalar, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(scalar, rhs, (a, b) => a * b);
+        T[] result = ElementwiseOperation(scalar, rhs.AsSpan(), (a, b) => a * b);
         return (RowVector<T>)result;
     }
 
 
     public static Matrix<T> OuterProduct<T>(ColumnVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        Assertions.AreSameLength((T[])lhs, (T[])rhs);
+        Assertions.AreSameLength(lhs.AsSpan(), rhs.AsSpan());
 
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
             Span<T> resultRow = result.RowArray(i);
-            ElementwiseOperation(lhs[i], rhs, (a, b) => a * b).CopyTo(resultRow);
+            ElementwiseOperation(lhs[i], rhs.AsSpan(), (a, b) => a * b).CopyTo(resultRow);
         }
         return result;
     }
 
-    public static Matrix<T> Product<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
-    {
-        if (lhs.ColumnCount != rhs.RowCount)
-            throw new DimensionMismatchException("Unable to compute product, lhs matrix columns do not match rhs matrix rows.", lhs.ColumnCount, rhs.RowCount);
 
-        Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
-        for (int i = 0; i < lhs.RowCount; i++)
-        {
-            for (int j = 0; j < rhs.ColumnCount; j++)
-            {
-                result[i, j] = lhs.Row(i) * rhs.Column(j);
-            }
-        }
-        return result;
-    }
-
-    public static ColumnVector<T> Product<T>(Matrix<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
-    {
-        if (lhs.ColumnCount != rhs.RowCount)
-            throw new DimensionMismatchException("RowVector and Matrix dimensions do not match", lhs.ColumnCount, rhs.RowCount);
-
-        ColumnVector<T> result = new ColumnVector<T>(lhs.RowCount);
-        for (int i = 0; i < lhs.RowCount; i++)
-        {
-            result[i] = lhs.Row(i) * rhs;
-        }
-        return result;
-    }
-
-    public static RowVector<T> Product<T>(RowVector<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
-    {
-        if (lhs.ColumnCount != rhs.RowCount)
-            throw new DimensionMismatchException("RowVector and Matrix dimensions do not match", lhs.ColumnCount, rhs.RowCount);
-
-        RowVector<T> result = new RowVector<T>(rhs.ColumnCount);
-        for (int i = 0; i < rhs.ColumnCount; i++)
-        {
-            result[i] = lhs * rhs.Column(i);
-        }
-        return result;
-    }
 
     public static IRectanglarMatrix<T> TensorProduct<T>(IRectanglarMatrix<T> left, IRectanglarMatrix<T> right) where T : struct, INumber<T>
     {
@@ -241,4 +178,8 @@ public static class Arithmetics
         return ((T[])vector).Max(T.Abs);
     }
 
+    internal static Matrix<T> ScalarProduct<T>(T rhs, Matrix<T> lhs) where T : struct, INumber<T>
+    {
+        throw new NotImplementedException();
+    }
 }

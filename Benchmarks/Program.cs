@@ -7,6 +7,6 @@ public static class Program
     {
         //var summary = BenchmarkRunner.Run<MathFuncBenchmark<float>>();
         var summary1 = BenchmarkRunner.Run<MatrixOptimization<float>>();
-        var summary2 = BenchmarkRunner.Run<MatrixOptimization<double>>();
+        //var summary2 = BenchmarkRunner.Run<MatrixOptimization<double>>();
     }
 }

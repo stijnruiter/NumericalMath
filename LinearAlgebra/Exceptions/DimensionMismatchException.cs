@@ -6,7 +6,7 @@ namespace LinearAlgebra.Exceptions;
 
 public static class Assertions
 {
-    public static void AreSameLength<T>(T[] lhs, T[] rhs)
+    public static void AreSameLength<T>(ReadOnlySpan<T> lhs, ReadOnlySpan<T> rhs)
     {
         if (lhs.Length != rhs.Length)
             throw new DimensionMismatchException("Not the same length.", lhs.Length, rhs.Length);
@@ -19,13 +19,6 @@ public static class Assertions
 
         if (lhs.ColumnCount != rhs.ColumnCount)
             throw new DimensionMismatchException("Number of columns do not match.", lhs.ColumnCount, rhs.ColumnCount);
-    }
-
-    public static void IsRectangular<T>(T[][] values)
-    {
-        for (int i = 1; i < values.Length; i++)
-            if (values[i].Length != values[0].Length)
-                throw new DimensionMismatchException($"Column length mismatch. Column {i} has length {values[i].Length}, Column 0 has length {values[0].Length}.");
     }
 }
 

@@ -46,5 +46,6 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     public static RowVector<T> operator *(T lhs, RowVector<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
     public static RowVector<T> operator *(RowVector<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
 
-    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => Arithmetics.DotProduct(lhs, rhs);
+    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => DotProduct(lhs.AsSpan(), rhs.AsSpan());
+
 }

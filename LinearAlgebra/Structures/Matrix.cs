@@ -16,6 +16,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     public int ColumnCount { get; }
 
     public T[] Elements => _values;
+    public ReadOnlySpan<T> AsSpan() => _values;
 
 
     public Matrix(int rowCount, int columnCount, T[] values)
@@ -97,17 +98,6 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     }
 
     private static string WriteRow(T[] row) => string.Join(", ", row.Select(v => $"{v,10:f5}"));
-
-
-    public static Matrix<T> operator +(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Addition(lhs, rhs);
-    public static Matrix<T> operator -(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Subtraction(lhs, rhs);
-
-    public static Matrix<T> operator *(Matrix<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
-    public static ColumnVector<T> operator *(Matrix<T> lhs, ColumnVector<T> rhs) => Arithmetics.Product(lhs, rhs);
-    public static RowVector<T> operator *(RowVector<T> lhs, Matrix<T> rhs) => Arithmetics.Product(lhs, rhs);
-
-    public static Matrix<T> operator *(T lhs, Matrix<T> rhs) => Arithmetics.ScalarProduct(lhs, rhs);
-    public static Matrix<T> operator *(Matrix<T> lhs, T rhs) => Arithmetics.ScalarProduct(rhs, lhs);
 
     public Matrix<T> Copy()
     {
