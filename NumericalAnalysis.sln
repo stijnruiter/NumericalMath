@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumericalMethods", "Numeric
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumericalMethods.Test", "NumericalMethods.Test\NumericalMethods.Test.csproj", "{AF990B1E-5DB5-4767-88B2-09079B095060}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{430EA34E-0FE6-4A39-8051-79C343FC13DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{430EA34E-0FE6-4A39-8051-79C343FC13DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,8 +26,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DABE1EB6-C870-4C94-A6D0-D736B2BFEB7B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E7D5B58F-072B-48AF-B8B6-4F5998213EE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

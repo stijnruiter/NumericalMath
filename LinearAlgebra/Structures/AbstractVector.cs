@@ -1,8 +1,6 @@
-﻿using LinearAlgebra.Exceptions;
-using System;
+﻿using System;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace LinearAlgebra.Structures;
 
