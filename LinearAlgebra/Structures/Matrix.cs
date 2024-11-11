@@ -77,13 +77,45 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return col;
     }
 
-    public RowVector<T> Row(int rowIndex) => (RowVector<T>)RowArray(rowIndex).ToArray();
-    public Span<T> RowArray(int rowIndex)
+    public T[] ColumnSlice(int columnIndex, int start, int length)
+    {
+        AssertColumnInRange(columnIndex);
+
+        T[] col = new T[length];
+        for (int i = start; i < start + length; i++)
+        {
+            col[i - start] = this[i, columnIndex];
+        }
+
+        return col;
+    }
+
+    public T[] ColumnSlice(int columnIndex, int start)
+    {
+        AssertColumnInRange(columnIndex);
+
+        T[] col = new T[RowCount - start];
+        for (int i = start; i < RowCount; i++)
+        {
+            col[i - start] = this[i, columnIndex];
+        }
+
+        return col;
+    }
+
+
+    public RowVector<T> Row(int rowIndex) => (RowVector<T>)RowSpan(rowIndex).ToArray();
+    public Span<T> RowSpan(int rowIndex)
     {
         AssertRowInRange(rowIndex);
         return new Span<T>(_values, rowIndex * ColumnCount, ColumnCount);
     }
 
+    public ReadOnlySpan<T> RowReadOnlySpan(int rowIndex)
+    {
+        AssertRowInRange(rowIndex);
+        return new ReadOnlySpan<T>(_values, rowIndex * ColumnCount, ColumnCount);
+    }
 
     public bool Equals(Matrix<T>? other)
     {
@@ -95,7 +127,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public override string ToString()
     {
-        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowArray(x).ToArray())))}";
+        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowSpan(x).ToArray())))}";
     }
 
     private static string WriteRow(T[] row) => string.Join(", ", row.Select(v => $"{v,10:f5}"));
@@ -109,9 +141,9 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public void SwapRows(int row1, int row2)
     {
-        T[] temp = RowArray(row1).ToArray();
-        RowArray(row2).CopyTo(RowArray(row1));
-        temp.CopyTo(RowArray(row2));
+        T[] temp = RowSpan(row1).ToArray();
+        RowSpan(row2).CopyTo(RowSpan(row1));
+        temp.CopyTo(RowSpan(row2));
     }
 
 
@@ -199,5 +231,41 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     {
         if (j < 0 || j >= ColumnCount)
             throw new IndexOutOfRangeException($"Column {j} not in {ColumnCount}x{RowCount} matrix.");
+    }
+
+    /// <summary>
+    /// Get largest absolute column value, e.g. max(abs(matrix[startIndex.. , columnIndex]))
+    /// </summary>
+    /// <param name="matrix">The searchmatrix</param>
+    /// <returns>The max abs value and its index</returns>
+    public (T value, int index) GetAbsMaxElementInColumn(int columnIndex, int startIndex = 0) 
+    {
+        // Start with first element
+        ReadOnlySpan<T> values = AsReadOnlySpan();
+        int maxIndex = startIndex;
+        T maxValue = T.Abs(values[(startIndex * ColumnCount) + columnIndex]);
+        T nextValue;
+
+        // Loop over the rest of the rows
+        for (int i = startIndex + 1; i < RowCount; i++)
+        {
+            if ((nextValue = T.Abs(values[(i * ColumnCount) + columnIndex])) > maxValue)
+            {
+                maxValue = nextValue;
+                maxIndex = i;
+            }
+        }
+        return (maxValue, maxIndex);
+    }
+
+    public T DiagonalProduct()
+    {
+        ReadOnlySpan<T> values = AsReadOnlySpan();
+        T product = T.MultiplicativeIdentity;
+        for (int i = 0; i < ColumnCount; i++)
+        {
+            product *= values[(i * ColumnCount) + i];
+        }
+        return product;
     }
 }

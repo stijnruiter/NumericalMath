@@ -77,7 +77,7 @@ public static class Arithmetics
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
-            Span<T> resultRow = result.RowArray(i);
+            Span<T> resultRow = result.RowSpan(i);
             ElementwiseOperation(lhs[i], rhs.AsReadOnlySpan(), (a, b) => a * b).CopyTo(resultRow);
         }
         return result;
@@ -127,10 +127,5 @@ public static class Arithmetics
     public static T? NormInf<T>(Structures.AbstractVector<T> vector) where T : struct, INumber<T>, IRootFunctions<T>
     {
         return ((T[])vector).Max(T.Abs);
-    }
-
-    internal static Matrix<T> ScalarProduct<T>(T rhs, Matrix<T> lhs) where T : struct, INumber<T>
-    {
-        throw new NotImplementedException();
     }
 }

@@ -12,23 +12,30 @@ public class MatrixOptimization<T> where T : struct, INumber<T>
 
     private Matrix<T> left;
     private Matrix<T> right;
+    private ColumnVector<T> rightVec;
 
     [GlobalSetup]
     public void Setup()
     {
         left = new Matrix<T>(Size, Size, T.One + T.One + T.One);
-        right = new Matrix<T>(Size, Size, T.One + T.One);
+        right = Matrix<T>.Diagonal(Size, T.One + T.One);
+        rightVec = new ColumnVector<T>(Size, T.One);
+
     }
 
     [Benchmark(Baseline = true)]
     public Matrix<T> Addition() => left + right;
 
-    [Benchmark]
-    public Matrix<T> Subtraction() => left - right;
+    //[Benchmark]
+    //public Matrix<T> Subtraction() => left - right;
+
+    //[Benchmark]
+    //public Matrix<T> Product() => left * right;
 
     [Benchmark]
-    public Matrix<T> Product() => left * right;
+    public Matrix<T> SolveMatrix() => PluFactorizationOperations.SolveUsingPLU(left, right, -T.One);
+
 
     [Benchmark]
-    public Matrix<T> Solve() => PluFactorizationOperations.SolveUsingPLU(left, right, T.Zero);
+    public ColumnVector<T> SolveVector() => PluFactorizationOperations.SolveUsingPLU(left, rightVec, -T.One);
 }

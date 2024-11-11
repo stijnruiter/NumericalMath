@@ -1,6 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
 
@@ -37,30 +38,6 @@ public static class PluFactorizationOperations
         return result;
     }
 
-    /// <summary>
-    /// Get largest absolute column value, e.g. max(abs(matrix[startIndex.. , columnIndex]))
-    /// </summary>
-    /// <param name="matrix">The searchmatrix</param>
-    /// <returns>The max abs value and its index</returns>
-    private static (T value, int index) GetAbsMaxElementInColumn<T>(Matrix<T> matrix, int columnIndex, int startIndex = 0) where T : struct, INumber<T>
-    {
-        // Start with first element
-        int maxIndex = startIndex;
-        T maxValue = T.Abs(matrix[columnIndex, startIndex]);
-        T nextValue;
-
-        // Loop over the rest of the rows
-        for (int i = startIndex + 1; i < matrix.RowCount; i++)
-        {
-            if ((nextValue = T.Abs(matrix[i, columnIndex])) > maxValue)
-            {
-                maxValue = nextValue;
-                maxIndex = i;
-            }
-        }
-        return (maxValue, maxIndex);
-    }
-
     private static void SwapRows<T>(this T[] rows, int first, int second)
     {
         (rows[second], rows[first]) = (rows[first], rows[second]);
@@ -86,9 +63,9 @@ public static class PluFactorizationOperations
 
         for (int i = 0; i < LU.ColumnCount; i++)
         {
-            (T maxValue, int maxIndex) = GetAbsMaxElementInColumn(LU, i, i);
+            (T maxValue, int maxIndex) = LU.GetAbsMaxElementInColumn(i, i);
 
-            if (maxValue < tolerance) // No pivot column found in column i
+            if (maxValue <= tolerance) // No pivot column found in column i
                 throw new DegenerateMatrixException();
 
             if (maxIndex != i)
@@ -98,19 +75,39 @@ public static class PluFactorizationOperations
                 permutations++;
             }
 
-            Parallel.For(i + 1, LU.RowCount, j =>
+            ReadOnlySpan<T> pivotRow = LU.RowSpan(i).Slice(i + 1);
+
+            //Parallel.For(i + 1, LU.RowCount, j =>
+            for (int j = i + 1; j < LU.RowCount; j++)
             {
                 // Gaussian elimination step using pivot i
                 LU[j, i] /= LU[i, i];
 
-                for (int k = i + 1; k < LU.ColumnCount; k++)
-                {
-                    LU[j, k] -= LU[j, i] * LU[i, k];
-                }
-            });
+                //for (int k = i + 1; k < LU.ColumnCount; k++)
+                //    LU[j, k] -= LU[j, i] * LU[i, k];
+
+                Span<T> elemRow = LU.RowSpan(j).Slice(i + 1);
+                ScalarProductSubtract(elemRow, LU[j, i], pivotRow);
+            };
         }
 
         return (LU, pivots, permutations);
+    }
+
+    private static void ScalarProductSubtract<T>(Span<T> destination, T scalar, ReadOnlySpan<T> source) where T : struct, INumberBase<T>
+    {
+        ReadOnlySpan<Vector<T>> sourceVec = MemoryMarshal.Cast<T, Vector<T>>(source);
+        Span<Vector<T>> destinationVec = MemoryMarshal.Cast<T, Vector<T>>(destination);
+        Vector<T> scalarVec = new Vector<T>(scalar);
+        for (int j = 0; j < sourceVec.Length; j++)
+        {
+            destinationVec[j] -= scalarVec * sourceVec[j];
+        }
+
+        for (int j = sourceVec.Length * Vector<T>.Count; j <  destination.Length; j++)
+        {
+            destination[j] -= scalar * source[j];
+        }
     }
 
     /// <summary>
@@ -172,7 +169,7 @@ public static class PluFactorizationOperations
         (Matrix<T> lu, int[] pivots, int permutations) = PluFactorization(A, tolerance);
 
         T determinant = permutations % 2 == 0 ? T.MultiplicativeIdentity : -T.MultiplicativeIdentity;
-        determinant *= DiagonalProduct(lu);
+        determinant *= lu.DiagonalProduct();
         return determinant;
     }
 
@@ -184,18 +181,19 @@ public static class PluFactorizationOperations
     /// <returns>Solution for y</returns>
     public static ColumnVector<T> ForwardSubstitution<T>(Matrix<T> L, ColumnVector<T> b) where T : struct, INumber<T>
     {
-        T sum;
-        ColumnVector<T> y = new ColumnVector<T>(b.Length);
+        ColumnVector<T> y = b.Copy();// new ColumnVector<T>(b.Length);
+        ForwardSubstitutionInPlace(L, y.AsSpan());
+        return y;
+    }
+
+    internal static void ForwardSubstitutionInPlace<T>(Matrix<T> L, Span<T> b) where T : struct, INumber<T>
+    {
         for (int i = 0; i < b.Length; i++)
         {
-            sum = T.AdditiveIdentity;
-            for (int k = 0; k < i; k++)
-            {
-                sum += L[i, k] * y[k];
-            }
-            y[i] = b[i] - sum;
+            //for (int k = 0; k < i; k++)
+            //    sum += L[i, k] * y[k];
+            b[i] -= VectorizationOps.DotProduct(L.RowReadOnlySpan(i).Slice(0, i), b.Slice(0, i));
         }
-        return y;
     }
 
     /// <summary>
@@ -206,21 +204,28 @@ public static class PluFactorizationOperations
     /// <returns>Solution for y</returns>
     public static Matrix<T> ForwardSubstitution<T>(Matrix<T> L, Matrix<T> B) where T : struct, INumber<T>
     {
-        T sum;
-        Matrix<T> Y = new Matrix<T>(B.RowCount, B.ColumnCount);
+        Matrix<T> Y = B.Copy();// new Matrix<T>(B.RowCount, B.ColumnCount);
+        ForwardSubstitutionInPlace(L, Y);
+        return Y;
+    }
+    
+    private static void ForwardSubstitutionInPlace<T>(Matrix<T> L, Matrix<T> B) where T : struct, INumber<T>
+    {
         for (int i = 0; i < B.RowCount; i++)
         {
+            ReadOnlySpan<T> partialRow = L.RowSpan(i).Slice(0, i);
             for (int j = 0; j < B.ColumnCount; j++)
             {
-                sum = T.AdditiveIdentity;
-                for (int k = 0; k < i; k++)
-                {
-                    sum += L[i, k] * Y[k, j];
-                }
-                Y[i, j] = B[i, j] - sum;
+                //for (int k = 0; k < i; k++)
+                //    Y[i, j] -= L[i, k] * Y[k, j];
+                //Y[i, j] = B[i, j] - sum;
+
+                // TODO: Might be faster if Y was column-major, then no copies need to be made
+                ReadOnlySpan<T> partialColumn = B.ColumnSlice(j, 0, i);
+                B[i,j] -= VectorizationOps.DotProduct(partialRow, partialColumn);
+
             }
         }
-        return Y;
     }
 
     /// <summary>
@@ -231,20 +236,19 @@ public static class PluFactorizationOperations
     /// <returns>Solution for x</returns>
     public static ColumnVector<T> BackwardSubstitution<T>(Matrix<T> U, ColumnVector<T> y) where T : struct, INumber<T>
     {
-        // Solve 
-        T sum;
-        ColumnVector<T> x = new ColumnVector<T>(y.Length);
+        ColumnVector<T> x = y.Copy();
+        BackwardSubstitutionInPlace(U, x.AsSpan());
+        return x;
+    }
+
+    public static void BackwardSubstitutionInPlace<T>(Matrix<T> U, Span<T> y) where T : struct, INumber<T>
+    {
         for (int i = y.Length - 1; i >= 0; i--)
         {
-            sum = T.AdditiveIdentity;
-            for (int k = i + 1; k < y.Length; k++)
-            {
-                sum += U[i, k] * x[k];
-            }
-
-            x[i] = (y[i] - sum) / U[i, i];
+            //for (int k = i + 1; k < y.Length; k++)
+            //    sum += U[i, k] * x[k];
+            y[i] = (y[i] - VectorizationOps.DotProduct(U.RowReadOnlySpan(i).Slice(i + 1), y.Slice(i + 1))) / U[i, i];
         }
-        return x;
     }
 
     /// <summary>
@@ -255,23 +259,25 @@ public static class PluFactorizationOperations
     /// <returns>Solution for x</returns>
     public static Matrix<T> BackwardSubstitution<T>(Matrix<T> U, Matrix<T> Y) where T : struct, INumber<T>
     {
-        // Solve
-        T sum;
-        Matrix<T> X = new Matrix<T>(Y.RowCount, Y.ColumnCount);
+        Matrix<T> X = Y.Copy();
+        BackwardSubstitutionInPlace(U, X);
+        return X;
+    }
+
+
+    private static void BackwardSubstitutionInPlace<T>(Matrix<T> U, Matrix<T> Y) where T : struct, INumber<T>
+    {
         for (int i = Y.RowCount - 1; i >= 0; i--)
         {
+            ReadOnlySpan<T> partialRow = U.RowSpan(i).Slice(i + 1);
             for (int j = 0; j < Y.ColumnCount; j++)
             {
-                sum = T.AdditiveIdentity;
-                for (int k = i + 1; k < Y.RowCount; k++)
-                {
-                    sum += U[i, k] * X[k, j];
-                }
-
-                X[i, j] = (Y[i, j] - sum) / U[i, i];
+                //for (int k = i + 1; k < Y.RowCount; k++)
+                //    sum += U[i, k] * X[k, j];
+                ReadOnlySpan<T> partialColumn = Y.ColumnSlice(j, i + 1);
+                Y[i, j] = (Y[i, j] - VectorizationOps.DotProduct(partialRow, partialColumn)) / U[i, i];
             }
         }
-        return X;
     }
 
     /// <summary>
@@ -285,16 +291,16 @@ public static class PluFactorizationOperations
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
 
-        if (DiagonalProduct(lu) == T.Zero)
+        if (lu.DiagonalProduct() == T.Zero)
             throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Solve Ly=b
         ColumnVector<T> y = ForwardSubstitution(lu, b);
 
         // Solve Ux=y
-        ColumnVector<T> x = BackwardSubstitution(lu, y);
+        BackwardSubstitutionInPlace(lu, y.AsSpan());
 
-        return x;
+        return y;
     }
 
     /// <summary>
@@ -308,16 +314,16 @@ public static class PluFactorizationOperations
         // LU decomposition: A = L U
         Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
 
-        if (DiagonalProduct(lu) == T.Zero)
+        if (lu.DiagonalProduct() == T.Zero)
             throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Solve Ly=b
         Matrix<T> y = ForwardSubstitution(lu, B);
 
         // Solve Ux=y
-        Matrix<T> x = BackwardSubstitution(lu, y);
+        BackwardSubstitutionInPlace(lu, y);
 
-        return x;
+        return y;
     }
 
 
@@ -326,7 +332,7 @@ public static class PluFactorizationOperations
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
 
-        if (T.Abs(DiagonalProduct(lu)) <= tolerance)
+        if (T.Abs(lu.DiagonalProduct()) <= tolerance)
             throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
@@ -337,49 +343,35 @@ public static class PluFactorizationOperations
         }
 
         // Solve Ly=b
-        ColumnVector<T> y = ForwardSubstitution(lu, Pb);
+        ForwardSubstitutionInPlace(lu, Pb.AsSpan());
 
         // Solve Ux=y
-        ColumnVector<T> x = BackwardSubstitution(lu, y);
+        BackwardSubstitutionInPlace(lu, Pb.AsSpan());
 
-        return x;
+        return Pb;
     }
-
 
     public static Matrix<T> SolveUsingPLU<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : struct, INumber<T>
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
         
-        if (T.Abs(DiagonalProduct(lu)) <= tolerance)
+        if (T.Abs(lu.DiagonalProduct()) <= tolerance)
             throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
-        Matrix<T> Pb = Matrix<T>.Zero(B.RowCount, B.ColumnCount);
+        Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
         for (int i = 0; i < Pb.RowCount; i++)
         {
-            for (int j = 0; j < Pb.ColumnCount; j++)
-            {
-                Pb[i, j] = B[pivots[i], j];
-            }
+            B.RowReadOnlySpan(pivots[i]).CopyTo(Pb.RowSpan(i));
         }
 
         // Solve LY=B
-        Matrix<T> Y = ForwardSubstitution(lu, Pb);
+        ForwardSubstitutionInPlace(lu, Pb);
 
         // Solve UX=Y
-        Matrix<T> X = BackwardSubstitution(lu, Y);
+        BackwardSubstitutionInPlace(lu, Pb);
 
-        return X;
-    }
-
-    private static T DiagonalProduct<T>(Matrix<T> matrix) where T : struct, INumber<T>
-    {
-        T product = T.MultiplicativeIdentity;
-        for(int i = 0; i < matrix.ColumnCount; i++)
-        {
-            product *= matrix[i, i];
-        }
-        return product;
+        return Pb;
     }
 }

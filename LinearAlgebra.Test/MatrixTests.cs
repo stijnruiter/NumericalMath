@@ -64,8 +64,8 @@ internal class MatrixTests
         Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
         Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
 
-        Assert.That(matrix.RowArray(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowArray(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.RowSpan(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowSpan(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
         Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
         Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));
@@ -86,8 +86,8 @@ internal class MatrixTests
         Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
         Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
 
-        Assert.That(matrix.RowArray(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowArray(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.RowSpan(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowSpan(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
         Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
         Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));

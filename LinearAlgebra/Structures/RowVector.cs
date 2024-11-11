@@ -14,6 +14,11 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     {
     }
 
+    public RowVector(int count, T scalar) : base(count)
+    {
+        Array.Fill(values, scalar);
+    }
+
     public override int RowCount => 1;
 
     public override int ColumnCount => Length;
@@ -72,5 +77,11 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     }
 
     public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => VectorizationOps.DotProduct(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
-
+    
+    public RowVector<T> Copy()
+    {
+        T[] copy = new T[values.Length];
+        Array.Copy(values, copy, values.Length);
+        return new RowVector<T>(copy);
+    }
 }

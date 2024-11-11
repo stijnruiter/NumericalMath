@@ -10,6 +10,11 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public ColumnVector(T[] values) : base(values) { }
 
+    public ColumnVector(int count, T scalar) : base(count)
+    {
+        Array.Fill(values, scalar);
+    }
+
     public override int RowCount => Length;
 
     public override int ColumnCount => 1;
@@ -70,4 +75,11 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
     public static Matrix<T> operator *(ColumnVector<T> lhs, RowVector<T> rhs) => Arithmetics.OuterProduct(lhs, rhs);
 
     public static ColumnVector<T> Zero(int size) => new ColumnVector<T>(size);
+    
+    public ColumnVector<T> Copy()
+    {
+        T[] copy = new T[values.Length];
+        Array.Copy(values, copy, values.Length);
+        return new ColumnVector<T>(copy);
+    }
 }
