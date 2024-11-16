@@ -91,8 +91,15 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public RowVector<T> Copy()
     {
-        T[] copy = new T[values.Length];
+        Memory<T> copy = new T[values.Length];
         values.CopyTo(copy);
         return new RowVector<T>(copy);
+    }
+
+    public static RowVector<T>? Random(int size)
+    {
+        Random random = new Random();
+        RowVector<T> vector = new RowVector<T>(random.RandomNumbers<T>(size));
+        return vector;
     }
 }

@@ -7,6 +7,7 @@ namespace LinearAlgebra.Structures;
 public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<AbstractVector<T>> where T : struct, INumber<T>
 {
     protected Memory<T> values;
+    internal Span<T> Span => values.Span;
     public int Length { get; }
     public abstract int RowCount { get; }
     public abstract int ColumnCount { get; }
@@ -40,7 +41,6 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         if (other is null)
             return false;
 
-        // TODO: Include stride
         if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
             return false;
 
@@ -50,12 +50,7 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
                 return false;
         }
         return true;
-            
-            
-            //&& values.Span.SequenceEqual(other.values.Span);
     }
-
-    internal Span<T> Span => values.Span;
 
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{
         string.Join(", ", Enumerable.Range(0, Length).Select(i => this[i]))}]";

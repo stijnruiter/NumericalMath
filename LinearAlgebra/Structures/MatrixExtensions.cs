@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 
 namespace LinearAlgebra.Structures;
@@ -36,4 +37,36 @@ public static class MatrixExtensions
 
     public static Matrix<double> Inverse(this Matrix<double> A, double degenerateTolerance = Constants.DefaultDoubleTolerance)
         => PluFactorizationOperations.SolveUsingPLU(A, Matrix<double>.Identity(A.RowCount), degenerateTolerance);
+
+    internal static Memory<T> RandomNumbers<T>(this Random random, int size)
+    {
+        switch(Type.GetTypeCode(typeof(T)))
+        {
+            case TypeCode.Int32:
+                int[] ints = new int[size];
+                for (int i = 0; i < size; i++)
+                {
+                    ints[i] = random.Next();
+                }
+                return ints as T[];
+
+            case TypeCode.Single:
+                float[] singles = new float[size];
+                for (int i = 0; i < size; i++)
+                {
+                    singles[i] = random.Next();
+                }
+                return singles as T[];
+
+            case TypeCode.Double:
+                double[] doubles = new double[size];
+                for (int i = 0; i < size; i++)
+                {
+                    doubles[i] = random.Next();
+                }
+                return doubles as T[];
+            default:
+                throw new NotImplementedException();
+        }
+    }
 }

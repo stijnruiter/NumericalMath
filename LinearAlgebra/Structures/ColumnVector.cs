@@ -80,8 +80,16 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
     
     public ColumnVector<T> Copy()
     {
-        T[] copy = new T[values.Length];
+        Memory<T> copy = new T[values.Length];
         values.CopyTo(copy);
         return new ColumnVector<T>(copy);
     }
+
+    public static ColumnVector<T>? Random(int size)
+    {
+        Random random = new Random();
+        ColumnVector<T> vector = new ColumnVector<T>(random.RandomNumbers<T>(size));
+        return vector;
+    }
+
 }

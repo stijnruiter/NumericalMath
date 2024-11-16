@@ -5,7 +5,6 @@ namespace LinearAlgebra;
 
 internal static class ElementwiseOps
 {
-
     internal static T DotProduct<T>(ReadOnlySpan<T> lhs, int leftStride, ReadOnlySpan<T> rhs, int rightStride) where T : struct, INumberBase<T>
     {
         T result = T.AdditiveIdentity;

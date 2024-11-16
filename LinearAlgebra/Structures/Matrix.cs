@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace LinearAlgebra.Structures;
@@ -10,12 +11,11 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 {
     // Row-major Matrix
     protected Memory<T> _values;
+    internal Span<T> Span => _values.Span;
 
     public int RowCount { get; }
 
     public int ColumnCount { get; }
-
-    public Span<T> Elements => _values.Span;
 
     public Matrix(int rowCount, int columnCount, Memory<T> values)
     {
@@ -30,7 +30,6 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         ColumnCount = columnCount;
         _values = new T[rowCount * columnCount];
     }
-
 
     public Matrix(int rowCount, int columnCount, T scalar) : this(rowCount, columnCount)
     {
@@ -167,9 +166,20 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return result;
     }
 
+    public static Matrix<T>? Random(int rows, int columns)
+    {
+        Random random = new Random();
+        Matrix<T> matrix = new Matrix<T>(rows, columns, random.RandomNumbers<T>(rows * columns));
+        return matrix;
+    }
+
     public static Matrix<T> Zero(int size) => Zero(size, size);
 
     public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.Zero);
+
+    public static Matrix<T> One(int size) => One(size, size);
+
+    public static Matrix<T> One(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.One);
 
     public static Matrix<T> Identity(int size) => Matrix<T>.Diagonal(size, T.One);
 
@@ -255,6 +265,4 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         }
         return product;
     }
-
-    internal Span<T> Span => _values.Span;
 }
