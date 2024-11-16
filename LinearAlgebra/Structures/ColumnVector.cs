@@ -6,12 +6,11 @@ namespace LinearAlgebra.Structures;
 
 public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 {
-    public ColumnVector(T[] values) : this (new Memory<T>(values))
-    { }
+    public ColumnVector(T[] values) : this (new Memory<T>(values)) { }
 
     public ColumnVector(int count) : base(count) { }
 
-    public ColumnVector(Memory<T> values) : base(values) { }
+    public ColumnVector(Memory<T> values, int stride = 1) : base(values, stride) { }
 
     public ColumnVector(int count, T scalar) : base(count)
     {

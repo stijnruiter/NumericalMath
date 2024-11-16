@@ -78,7 +78,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
             ColumnVector<T> column = rhs.Column(j);
             for (int i = 0; i < lhs.RowCount; i++)
             {
-                result[i, j] = lhs.RowView(i) * column;
+                result[i, j] = lhs.Row(i) * column;
             }
         }
     }
@@ -87,7 +87,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     {
         for (int i = 0; i < lhs.RowCount; i++)
         {
-            result[i] = lhs.RowView(i) * rhs;
+            result[i] = lhs.Row(i) * rhs;
         }
     }
 

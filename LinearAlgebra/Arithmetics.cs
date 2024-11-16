@@ -77,7 +77,7 @@ public static class Arithmetics
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
-            RowVector<T> resultRow = result.RowView(i);
+            RowVector<T> resultRow = result.Row(i);
             ElementwiseOperation(lhs[i], rhs.Span, (a, b) => a * b).CopyTo(resultRow.Span);
         }
         return result;

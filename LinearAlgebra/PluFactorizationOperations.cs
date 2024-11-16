@@ -75,7 +75,7 @@ public static class PluFactorizationOperations
                 permutations++;
             }
 
-            ReadOnlySpan<T> pivotRow = LU.RowView(i).Span.Slice(i + 1);
+            ReadOnlySpan<T> pivotRow = LU.Row(i).Span.Slice(i + 1);
 
             //Parallel.For(i + 1, LU.RowCount, j =>
             for (int j = i + 1; j < LU.RowCount; j++)
@@ -86,7 +86,7 @@ public static class PluFactorizationOperations
                 //for (int k = i + 1; k < LU.ColumnCount; k++)
                 //    LU[j, k] -= LU[j, i] * LU[i, k];
 
-                Span<T> elemRow = LU.RowView(j).Span.Slice(i + 1);
+                Span<T> elemRow = LU.Row(j).Span.Slice(i + 1);
                 ScalarProductSubtract(elemRow, LU[j, i], pivotRow);
             };
         }
@@ -192,7 +192,7 @@ public static class PluFactorizationOperations
         {
             //for (int k = 0; k < i; k++)
             //    sum += L[i, k] * y[k];
-            b[i] -= VectorizationOps.DotProduct<T>(L.RowView(i).Span.Slice(0, i), b.Slice(0, i));
+            b[i] -= VectorizationOps.DotProduct<T>(L.Row(i).Span.Slice(0, i), b.Slice(0, i));
         }
     }
 
@@ -213,7 +213,7 @@ public static class PluFactorizationOperations
     {
         for (int i = 0; i < B.RowCount; i++)
         {
-            ReadOnlySpan<T> partialRow = L.RowView(i).Span.Slice(0, i);
+            ReadOnlySpan<T> partialRow = L.Row(i).Span.Slice(0, i);
             for (int j = 0; j < B.ColumnCount; j++)
             {
                 //for (int k = 0; k < i; k++)
@@ -222,7 +222,7 @@ public static class PluFactorizationOperations
 
                 // TODO: Might be faster if Y was column-major, then no copies need to be made
                 ReadOnlySpan<T> partialColumn = B.ColumnSlice(j, 0, i).Span;
-                B[i,j] -= VectorizationOps.DotProduct(partialRow, partialColumn);
+                B[i,j] -= ElementwiseOps.DotProduct(partialRow, 1, partialColumn, B.ColumnCount);
 
             }
         }
@@ -247,7 +247,7 @@ public static class PluFactorizationOperations
         {
             //for (int k = i + 1; k < y.Length; k++)
             //    sum += U[i, k] * x[k];
-            y[i] = (y[i] - VectorizationOps.DotProduct<T>(U.RowView(i).Span.Slice(i + 1), y.Slice(i + 1))) / U[i, i];
+            y[i] = (y[i] - VectorizationOps.DotProduct<T>(U.Row(i).Span.Slice(i + 1), y.Slice(i + 1))) / U[i, i];
         }
     }
 
@@ -268,13 +268,13 @@ public static class PluFactorizationOperations
     {
         for (int i = Y.RowCount - 1; i >= 0; i--)
         {
-            ReadOnlySpan<T> partialRow = U.RowView(i).Span.Slice(i + 1);
+            ReadOnlySpan<T> partialRow = U.Row(i).Span.Slice(i + 1);
             for (int j = 0; j < Y.ColumnCount; j++)
             {
                 //for (int k = i + 1; k < Y.RowCount; k++)
                 //    sum += U[i, k] * X[k, j];
                 ReadOnlySpan<T> partialColumn = Y.ColumnSlice(j, i + 1).Span;
-                Y[i, j] = (Y[i, j] - VectorizationOps.DotProduct(partialRow, partialColumn)) / U[i, i];
+                Y[i, j] = (Y[i, j] - ElementwiseOps.DotProduct(partialRow, 1, partialColumn, Y.ColumnCount)) / U[i, i];
             }
         }
     }
@@ -362,7 +362,7 @@ public static class PluFactorizationOperations
         Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
         for (int i = 0; i < Pb.RowCount; i++)
         {
-            B.RowView(pivots[i]).Span.CopyTo(Pb.RowView(i).Span);
+            B.Row(pivots[i]).Span.CopyTo(Pb.Row(i).Span);
         }
 
         // Solve LY=B

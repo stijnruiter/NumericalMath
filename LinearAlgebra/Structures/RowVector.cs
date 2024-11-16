@@ -6,7 +6,7 @@ namespace LinearAlgebra.Structures;
 
 public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 {
-    public RowVector(T[] values) : this(new Memory<T>(values))
+    public RowVector(T[] values) : this(new Memory<T>(values), 1)
     {
 
     }
@@ -15,7 +15,7 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     {
     }
 
-    public RowVector(Memory<T> values) : base(values)
+    public RowVector(Memory<T> values, int stride = 1) : base(values, stride)
     {
     }
 
@@ -81,8 +81,14 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
         return result;
     }
 
-    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => VectorizationOps.DotProduct<T>(lhs.Span, rhs.Span);
-    
+    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs)
+    {
+        if (lhs.Stride == 1 && rhs.Stride == 1)
+            return VectorizationOps.DotProduct<T>(lhs.Span, rhs.Span);
+
+        return ElementwiseOps.DotProduct<T>(lhs.Span, lhs.Stride, rhs.Span, rhs.Stride);
+    }
+
     public RowVector<T> Copy()
     {
         T[] copy = new T[values.Length];

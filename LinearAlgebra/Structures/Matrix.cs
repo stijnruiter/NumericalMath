@@ -62,51 +62,35 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         }
     }
 
-    //public ColumnVector<T> Column(int columnIndex) => (ColumnVector<T>)ColumnArray(columnIndex);
-
     public ColumnVector<T> Column(int columnIndex)
     {
         AssertColumnInRange(columnIndex);
-
-        T[] col = new T[RowCount];
-        for (int i = 0; i < RowCount; i++)
-        {
-            col[i] = this[i, columnIndex];
-        }
-
-        return new ColumnVector<T>(col) ;
-    }
-
-    public ColumnVector<T> ColumnSlice(int columnIndex, int start, int length)
-    {
-        AssertColumnInRange(columnIndex);
-
-        T[] col = new T[length];
-        for (int i = start; i < start + length; i++)
-        {
-            col[i - start] = this[i, columnIndex];
-        }
-
-        return new ColumnVector<T>(col);
+        return new ColumnVector<T>(_values.Slice(columnIndex), stride: ColumnCount);
     }
 
     public ColumnVector<T> ColumnSlice(int columnIndex, int start)
     {
         AssertColumnInRange(columnIndex);
 
-        T[] col = new T[RowCount - start];
-        for (int i = start; i < RowCount; i++)
-        {
-            col[i - start] = this[i, columnIndex];
-        }
+        if (start == RowCount)
+            return new ColumnVector<T>(0);
 
-        return new ColumnVector<T>(col);
+        return new ColumnVector<T>(_values.Slice(start * ColumnCount + columnIndex), stride: ColumnCount);
     }
 
-    public RowVector<T> RowView(int rowIndex)
+    public ColumnVector<T> ColumnSlice(int columnIndex, int start, int length)
+    {
+        AssertColumnInRange(columnIndex);
+        if (start == RowCount || length == 0)
+            return new ColumnVector<T>(0);
+        return new ColumnVector<T>(_values.Slice(start * ColumnCount + columnIndex, length * ColumnCount), stride: ColumnCount);
+    }
+
+
+    public RowVector<T> Row(int rowIndex)
     {
         AssertRowInRange(rowIndex);
-        return new RowVector<T>(_values.Slice(rowIndex * ColumnCount, ColumnCount));
+        return new RowVector<T>(_values.Slice(rowIndex * ColumnCount, ColumnCount), stride: 1);
     }
 
     public bool Equals(Matrix<T>? other)
@@ -119,7 +103,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public override string ToString()
     {
-        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowView(x))))}";
+        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(Row(x))))}";
     }
 
     private static string WriteRow(RowVector<T> row)
@@ -141,8 +125,8 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public void SwapRows(int row1, int row2)
     {
-        Span<T> rowView1 = RowView(row1).Span;
-        Span<T> rowView2 = RowView(row2).Span;
+        Span<T> rowView1 = Row(row1).Span;
+        Span<T> rowView2 = Row(row2).Span;
         Span<T> tempCopy = new T[rowView1.Length];
         rowView1.CopyTo(tempCopy);
         rowView2.CopyTo(rowView1);
