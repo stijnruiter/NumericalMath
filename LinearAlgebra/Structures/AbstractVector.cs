@@ -6,7 +6,7 @@ namespace LinearAlgebra.Structures;
 
 public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<AbstractVector<T>> where T : struct, INumber<T>
 {
-    protected T[] values;
+    protected Memory<T> values;
     public int Length => values.Length;
     public abstract int RowCount { get; }
     public abstract int ColumnCount { get; }
@@ -18,12 +18,12 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         values = new T[count];
     }
 
-    public AbstractVector(T[] values) => this.values = values;
+    public AbstractVector(Memory<T> values) => this.values = values;
 
     public T this[int index]
     {
-        get => values[index];
-        set => values[index] = value;
+        get => values.Span[index];
+        set => values.Span[index] = value;
     }
 
     public bool Equals(AbstractVector<T>? other)
@@ -31,14 +31,10 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         if (other is null)
             return false;
 
-        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.SequenceEqual(other.values);
+        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && values.Span.SequenceEqual(other.values.Span);
     }
 
-    public static implicit operator T[](AbstractVector<T> d) => d.values;
-
-    public ReadOnlySpan<T> AsReadOnlySpan() => values.AsSpan();
-    public Span<T> AsSpan() => values.AsSpan();
+    public Span<T> Span => values.Span;
 
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{string.Join(", ", values)}]";
-
 }

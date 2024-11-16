@@ -60,19 +60,15 @@ internal class MatrixTests
     {
         Matrix<int> matrix = new Matrix<int>(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } });
 
-        Assert.That(matrix.ColumnArray(0), Is.EqualTo(new int[] { 1, 4 }));
-        Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
-        Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
+        Assert.That(matrix.RowView(0).Span.ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowView(1).Span.ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
-        Assert.That(matrix.RowSpan(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowSpan(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>(new int[] { 1, 4 })));
+        Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>(new int[] { 2, 5 })));
+        Assert.That(matrix.Column(2), Is.EqualTo(new ColumnVector<int>(new int[] { 3, 6 })));
 
-        Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
-        Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));
-        Assert.That(matrix.Column(2), Is.EqualTo(new ColumnVector<int>([3, 6])));
-
-        Assert.That(matrix.Row(0), Is.EqualTo(new RowVector<int>([1, 2, 3])));
-        Assert.That(matrix.Row(1), Is.EqualTo(new RowVector<int>([4, 5, 6])));
+        Assert.That(matrix.RowView(0), Is.EqualTo(new RowVector<int>(new int[] { 1, 2, 3 })));
+        Assert.That(matrix.RowView(1), Is.EqualTo(new RowVector<int>(new int[] { 4, 5, 6 })));
     }
 
 
@@ -82,19 +78,15 @@ internal class MatrixTests
         int[,] values = { { 1, 2, 3 }, { 4, 5, 6 } };
         Matrix<int> matrix = new Matrix<int>(values);
 
-        Assert.That(matrix.ColumnArray(0), Is.EqualTo(new int[] { 1, 4 }));
-        Assert.That(matrix.ColumnArray(1), Is.EqualTo(new int[] { 2, 5 }));
-        Assert.That(matrix.ColumnArray(2), Is.EqualTo(new int[] { 3, 6 }));
+        Assert.That(matrix.RowView(0).Span.ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.RowView(1).Span.ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
-        Assert.That(matrix.RowSpan(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.RowSpan(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>(new int[] { 1, 4 })));
+        Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>(new int[] { 2, 5 })));
+        Assert.That(matrix.Column(2), Is.EqualTo(new ColumnVector<int>(new int[] { 3, 6 })));
 
-        Assert.That(matrix.Column(0), Is.EqualTo(new ColumnVector<int>([1, 4])));
-        Assert.That(matrix.Column(1), Is.EqualTo(new ColumnVector<int>([2, 5])));
-        Assert.That(matrix.Column(2), Is.EqualTo(new ColumnVector<int>([3, 6])));
-
-        Assert.That(matrix.Row(0), Is.EqualTo(new RowVector<int>([1, 2, 3])));
-        Assert.That(matrix.Row(1), Is.EqualTo(new RowVector<int>([4, 5, 6])));
+        Assert.That(matrix.RowView(0), Is.EqualTo(new RowVector<int>(new int[] { 1, 2, 3 })));
+        Assert.That(matrix.RowView(1), Is.EqualTo(new RowVector<int>(new int[] { 4, 5, 6 })));
     }
 
     [Test]
@@ -230,7 +222,7 @@ internal class MatrixTests
     [Test]
     public void RowMatrixMultiplication()
     {
-        RowVector<int> rowVector = new RowVector<int>([1, 2, 3, 4, 5]);
+        RowVector<int> rowVector = new RowVector<int>(new int[] { 1, 2, 3, 4, 5 });
         Assert.That(rowVector * Matrix<int>.Identity(5), Is.EqualTo(rowVector));
         Assert.Throws<DimensionMismatchException>(() => { var _ = rowVector * new Matrix<int>(3, 5); });
         Assert.Throws<DimensionMismatchException>(() => { var _ = rowVector * Matrix<int>.Identity(4); });
@@ -243,14 +235,14 @@ internal class MatrixTests
             {10, 11, 12 },
             {13, 14, 15 }
         });
-        RowVector<int> expected = new RowVector<int>([135, 150, 165]);
+        RowVector<int> expected = new RowVector<int>(new int[] { 135, 150, 165 });
         Assert.That(rowVector * nonSquare, Is.EqualTo(expected));
     }
 
     [Test]
     public void MatrixColumnMultiplication()
     {
-        ColumnVector<int> columnVector = new ColumnVector<int>([1, 2, 3, 4, 5]);
+        ColumnVector<int> columnVector = new ColumnVector<int>(new int[] { 1, 2, 3, 4, 5 });
         Assert.That(Matrix<int>.Identity(5) * columnVector, Is.EqualTo(columnVector));
         Assert.Throws<DimensionMismatchException>(() => { var _ = new Matrix<int>(5, 3) * columnVector; });
         Assert.Throws<DimensionMismatchException>(() => { var _ = Matrix<int>.Identity(4) * columnVector; });
@@ -261,7 +253,7 @@ internal class MatrixTests
             {  6,  7,  8,  9, 10 },
             { 11, 12, 13, 14, 15 }
         });
-        ColumnVector<int> expected = new ColumnVector<int>([55, 130, 205]);
+        ColumnVector<int> expected = new ColumnVector<int>(new int[] { 55, 130, 205 });
         Assert.That(nonSquare * columnVector, Is.EqualTo(expected));
     }
 

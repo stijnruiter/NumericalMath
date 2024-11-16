@@ -36,49 +36,49 @@ public static class Arithmetics
 
     public static RowVector<T> ElementwiseProduct<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a * b);
-        return (RowVector<T>)result;
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a * b);
+        return new RowVector<T>(result);
     }
 
     public static ColumnVector<T> ElementwiseProduct<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a * b);
-        return (ColumnVector<T>)result;
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a * b);
+        return new ColumnVector<T>(result);
     }
 
     public static Matrix<T> ElementwiseProduct<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a * b);
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a * b);
         return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static RowVector<T> ElementwiseDivision<T>(RowVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a / b);
-        return (RowVector<T>)result;
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a / b);
+        return new RowVector<T>(result);
     }
 
     public static ColumnVector<T> ElementwiseDivision<T>(ColumnVector<T> lhs, ColumnVector<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation<T>(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a / b);
-        return (ColumnVector<T>)result;
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a / b);
+        return new ColumnVector<T>(result);
     }
 
     public static Matrix<T> ElementwiseDivision<T>(Matrix<T> lhs, Matrix<T> rhs) where T : struct, INumber<T>
     {
-        T[] result = ElementwiseOperation(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), (a, b) => a / b);
+        Memory<T> result = ElementwiseOperation<T>(lhs.Span, rhs.Span, (a, b) => a / b);
         return new Matrix<T>(lhs.RowCount, lhs.ColumnCount, result);
     }
 
     public static Matrix<T> OuterProduct<T>(ColumnVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        Assertions.AreSameLength<T>(lhs.Span, rhs.Span);
 
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
-            Span<T> resultRow = result.RowSpan(i);
-            ElementwiseOperation(lhs[i], rhs.AsReadOnlySpan(), (a, b) => a * b).CopyTo(resultRow);
+            RowVector<T> resultRow = result.RowView(i);
+            ElementwiseOperation(lhs[i], rhs.Span, (a, b) => a * b).CopyTo(resultRow.Span);
         }
         return result;
     }
@@ -102,7 +102,7 @@ public static class Arithmetics
         return result;
     }
 
-    public static T Norm2<T>(Structures.AbstractVector<T> vector) where T : struct, INumber<T>, IRootFunctions<T>
+    public static T Norm2<T>(AbstractVector<T> vector) where T : struct, INumber<T>, IRootFunctions<T>
     {
         T result = T.AdditiveIdentity;
 
@@ -113,7 +113,7 @@ public static class Arithmetics
         return T.Sqrt(result);
     }
 
-    public static T Norm1<T>(Structures.AbstractVector<T> vector) where T : struct, INumber<T>, IRootFunctions<T>
+    public static T Norm1<T>(AbstractVector<T> vector) where T : struct, INumber<T>
     {
         T result = T.AdditiveIdentity;
 
@@ -124,8 +124,20 @@ public static class Arithmetics
         return result;
     }
 
-    public static T? NormInf<T>(Structures.AbstractVector<T> vector) where T : struct, INumber<T>, IRootFunctions<T>
+    public static T? NormInf<T>(AbstractVector<T> vector) where T : struct, INumber<T> => Max<T>(vector.Span, T.Abs);
+
+    public static T? Max<T>(ReadOnlySpan<T> span, Func<T, T> op) where T : struct, IComparisonOperators<T, T, bool>
     {
-        return ((T[])vector).Max(T.Abs);
+        if (span.Length == 0)
+            return null;
+
+        T max = op(span[0]);
+        T newValue;
+        for (int i = 0; i < span.Length; i++)
+        {
+            if ((newValue = op(span[i])) > max)
+                max = newValue;
+        }
+        return max;
     }
 }

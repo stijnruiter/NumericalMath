@@ -6,17 +6,22 @@ namespace LinearAlgebra.Structures;
 
 public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 {
+    public RowVector(T[] values) : this(new Memory<T>(values))
+    {
+
+    }
+
     public RowVector(int count) : base(count)
     {
     }
 
-    public RowVector(T[] values) : base(values)
+    public RowVector(Memory<T> values) : base(values)
     {
     }
 
     public RowVector(int count, T scalar) : base(count)
     {
-        Array.Fill(values, scalar);
+        values.Span.Fill(scalar);
     }
 
     public override int RowCount => 1;
@@ -48,40 +53,40 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static RowVector<T> operator +(RowVector<T> lhs, RowVector<T> rhs)
     {
-        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        Assertions.AreSameLength(lhs, rhs);
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.Addition(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.Addition<T>(lhs.Span, rhs.Span, result.Span);
         return result;
     }
 
     public static RowVector<T> operator -(RowVector<T> lhs, RowVector<T> rhs)
     {
-        Assertions.AreSameLength(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+        Assertions.AreSameLength(lhs, rhs);
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.Subtraction(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.Subtraction<T>(lhs.Span, rhs.Span, result.Span);
         return result;
     }
 
     public static RowVector<T> operator *(T lhs, RowVector<T> rhs)
     {
         RowVector<T> result = new RowVector<T>(rhs.Length);
-        VectorizationOps.ScalarProduct(lhs, rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.ScalarProduct(lhs, rhs.Span, result.Span);
         return result;
     }
 
     public static RowVector<T> operator *(RowVector<T> lhs, T rhs)
     {
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.ScalarProduct(rhs, lhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.ScalarProduct(rhs, lhs.Span, result.Span);
         return result;
     }
 
-    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => VectorizationOps.DotProduct(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan());
+    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) => VectorizationOps.DotProduct<T>(lhs.Span, rhs.Span);
     
     public RowVector<T> Copy()
     {
         T[] copy = new T[values.Length];
-        Array.Copy(values, copy, values.Length);
+        values.CopyTo(copy);
         return new RowVector<T>(copy);
     }
 }

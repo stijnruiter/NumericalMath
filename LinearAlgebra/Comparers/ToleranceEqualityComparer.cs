@@ -29,7 +29,7 @@ public class SequenceToleranceEqualityComparer<T> : EqualityComparer<IEnumerable
 
     public override int GetHashCode([DisallowNull] IEnumerable<T> obj) => obj.GetHashCode();
 }
-
+    
 public class ToleranceEqualityComparer<T> : EqualityComparer<T> where T : INumber<T>
 {
     private T _tolerance;

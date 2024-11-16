@@ -15,7 +15,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     {
         Assertions.AreSameSize(lhs, rhs);
         Matrix<T> result = new Matrix<T>(lhs.RowCount, lhs.ColumnCount);
-        VectorizationOps.Addition(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.Addition(lhs.Span, rhs.Span, result.Span);
         return result;
     }
 
@@ -23,7 +23,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     {
         Assertions.AreSameSize(lhs, rhs);
         Matrix<T> result = new Matrix<T>(lhs.RowCount, lhs.ColumnCount);
-        VectorizationOps.Subtraction(lhs.AsReadOnlySpan(), rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.Subtraction(lhs.Span, rhs.Span, result.Span);
         return result;
     }
 
@@ -60,14 +60,14 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     public static Matrix<T> operator *(T lhs, Matrix<T> rhs)
     {
         Matrix<T> result = new Matrix<T>(rhs.RowCount, rhs.ColumnCount);
-        VectorizationOps.ScalarProduct(lhs, rhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.ScalarProduct(lhs, rhs.Span, result.Span);
         return result;
     }
 
     public static Matrix<T> operator *(Matrix<T> lhs, T rhs)
     {
         Matrix<T> result = new Matrix<T>(lhs.RowCount, lhs.ColumnCount);
-        VectorizationOps.ScalarProduct(rhs, lhs.AsReadOnlySpan(), result.AsSpan());
+        VectorizationOps.ScalarProduct(rhs, lhs.Span, result.Span);
         return result;
     }
 
@@ -78,7 +78,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
             ColumnVector<T> column = rhs.Column(j);
             for (int i = 0; i < lhs.RowCount; i++)
             {
-                result[i, j] = lhs.Row(i) * column;
+                result[i, j] = lhs.RowView(i) * column;
             }
         }
     }
@@ -87,7 +87,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     {
         for (int i = 0; i < lhs.RowCount; i++)
         {
-            result[i] = lhs.Row(i) * rhs;
+            result[i] = lhs.RowView(i) * rhs;
         }
     }
 

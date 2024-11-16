@@ -1,26 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace LinearAlgebra.Structures;
 
 public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
 {
     // Row-major Matrix
-    protected T[] _values;
+    protected Memory<T> _values;
 
     public int RowCount { get; }
 
     public int ColumnCount { get; }
 
-    public T[] Elements => _values;
-    public ReadOnlySpan<T> AsReadOnlySpan() => _values;
-    public Span<T> AsSpan() => _values;
+    public Span<T> Elements => _values.Span;
 
-
-    public Matrix(int rowCount, int columnCount, T[] values)
+    public Matrix(int rowCount, int columnCount, Memory<T> values)
     {
         RowCount = rowCount;
         ColumnCount = columnCount;
@@ -37,13 +34,16 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public Matrix(int rowCount, int columnCount, T scalar) : this(rowCount, columnCount)
     {
-        Array.Fill(_values, scalar);
+        _values.Span.Fill(scalar);
     }
 
-    public Matrix(T[,] values) : this(values.GetLength(0), values.GetLength(1))
+    public Matrix(T[,] values) 
     {
-        // 2D array T[,] is row major stored, thus a direct copy is possible
-        Buffer.BlockCopy(values, 0, _values, 0, values.Length * Unsafe.SizeOf<T>());
+        RowCount = values.GetLength(0);
+        ColumnCount = values.GetLength(1);
+        T[] destination = new T[RowCount * ColumnCount];
+        Buffer.BlockCopy(values, 0, destination, 0, values.Length * Unsafe.SizeOf<T>());
+        _values = destination;
     }
 
     public T this[int rowIndex, int columnIndex]
@@ -52,19 +52,19 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         get
         {
             AssertIndexInRange(rowIndex, columnIndex);
-            return _values[(rowIndex * ColumnCount) + columnIndex];
+            return _values.Span[(rowIndex * ColumnCount) + columnIndex];
         }
 
         set
         {
             AssertIndexInRange(rowIndex, columnIndex);
-            _values[(rowIndex * ColumnCount) + columnIndex] = value;
+            _values.Span[(rowIndex * ColumnCount) + columnIndex] = value;
         }
     }
 
-    public ColumnVector<T> Column(int columnIndex) => (ColumnVector<T>)ColumnArray(columnIndex);
+    //public ColumnVector<T> Column(int columnIndex) => (ColumnVector<T>)ColumnArray(columnIndex);
 
-    public T[] ColumnArray(int columnIndex)
+    public ColumnVector<T> Column(int columnIndex)
     {
         AssertColumnInRange(columnIndex);
 
@@ -74,10 +74,10 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
             col[i] = this[i, columnIndex];
         }
 
-        return col;
+        return new ColumnVector<T>(col) ;
     }
 
-    public T[] ColumnSlice(int columnIndex, int start, int length)
+    public ColumnVector<T> ColumnSlice(int columnIndex, int start, int length)
     {
         AssertColumnInRange(columnIndex);
 
@@ -87,10 +87,10 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
             col[i - start] = this[i, columnIndex];
         }
 
-        return col;
+        return new ColumnVector<T>(col);
     }
 
-    public T[] ColumnSlice(int columnIndex, int start)
+    public ColumnVector<T> ColumnSlice(int columnIndex, int start)
     {
         AssertColumnInRange(columnIndex);
 
@@ -100,21 +100,13 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
             col[i - start] = this[i, columnIndex];
         }
 
-        return col;
+        return new ColumnVector<T>(col);
     }
 
-
-    public RowVector<T> Row(int rowIndex) => (RowVector<T>)RowSpan(rowIndex).ToArray();
-    public Span<T> RowSpan(int rowIndex)
+    public RowVector<T> RowView(int rowIndex)
     {
         AssertRowInRange(rowIndex);
-        return new Span<T>(_values, rowIndex * ColumnCount, ColumnCount);
-    }
-
-    public ReadOnlySpan<T> RowReadOnlySpan(int rowIndex)
-    {
-        AssertRowInRange(rowIndex);
-        return new ReadOnlySpan<T>(_values, rowIndex * ColumnCount, ColumnCount);
+        return new RowVector<T>(_values.Slice(rowIndex * ColumnCount, ColumnCount));
     }
 
     public bool Equals(Matrix<T>? other)
@@ -122,28 +114,39 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         if (other is null)
             return false;
 
-        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && _values.SequenceEqual(other._values);
+        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && _values.Span.SequenceEqual(other._values.Span);
     }
 
     public override string ToString()
     {
-        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowSpan(x).ToArray())))}";
+        return $"Mat{RowCount}x{ColumnCount}{Environment.NewLine}{string.Join(",\r\n", Enumerable.Range(0, RowCount).Select(x => WriteRow(RowView(x))))}";
     }
 
-    private static string WriteRow(T[] row) => string.Join(", ", row.Select(v => $"{v,10:f5}"));
+    private static string WriteRow(RowVector<T> row)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach(T element in row.Span)
+        {
+            stringBuilder.Append($"{element, 10:f5}, ");
+        }
+        return stringBuilder.ToString();
+    }
 
     public Matrix<T> Copy()
     {
         T[] copy = new T[_values.Length];
-        Array.Copy(_values, copy, _values.Length);
+        _values.CopyTo(copy);
         return new Matrix<T>(RowCount, ColumnCount, copy);
     }
 
     public void SwapRows(int row1, int row2)
     {
-        T[] temp = RowSpan(row1).ToArray();
-        RowSpan(row2).CopyTo(RowSpan(row1));
-        temp.CopyTo(RowSpan(row2));
+        Span<T> rowView1 = RowView(row1).Span;
+        Span<T> rowView2 = RowView(row2).Span;
+        Span<T> tempCopy = new T[rowView1.Length];
+        rowView1.CopyTo(tempCopy);
+        rowView2.CopyTo(rowView1);
+        tempCopy.CopyTo(rowView2);
     }
 
 
@@ -241,7 +244,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     public (T value, int index) GetAbsMaxElementInColumn(int columnIndex, int startIndex = 0) 
     {
         // Start with first element
-        ReadOnlySpan<T> values = AsReadOnlySpan();
+        ReadOnlySpan<T> values = Span;
         int maxIndex = startIndex;
         T maxValue = T.Abs(values[(startIndex * ColumnCount) + columnIndex]);
         T nextValue;
@@ -260,7 +263,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public T DiagonalProduct()
     {
-        ReadOnlySpan<T> values = AsReadOnlySpan();
+        ReadOnlySpan<T> values = _values.Span;
         T product = T.MultiplicativeIdentity;
         for (int i = 0; i < ColumnCount; i++)
         {
@@ -268,4 +271,6 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         }
         return product;
     }
+
+    internal Span<T> Span => _values.Span;
 }
