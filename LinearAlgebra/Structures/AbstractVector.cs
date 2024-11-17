@@ -79,4 +79,14 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
 
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{
         string.Join(", ", Enumerable.Range(0, Length).Select(i => this[i]))}]";
+
+    public T[] ToArray()
+    {
+        T[] values = new T[Length];
+        for (int i = 0; i <  Length; i++)
+        {
+            values[i] = this[i];
+        }
+        return values;
+    }
 }

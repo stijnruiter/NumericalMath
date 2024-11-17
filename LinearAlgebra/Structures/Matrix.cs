@@ -162,8 +162,6 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return result;
     }
 
-    
-
     public T DiagonalProduct()
     {
         ReadOnlySpan<T> values = Storage.Span;

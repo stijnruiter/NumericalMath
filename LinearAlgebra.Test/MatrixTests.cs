@@ -61,18 +61,12 @@ internal class MatrixTests
         int[,] values = { { 1, 2, 3 }, { 4, 5, 6 } };
         Matrix<int> matrix = new Matrix<int>(values);
 
-        Assert.That(matrix.Row(0).Span.ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
-        Assert.That(matrix.Row(1).Span.ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
+        Assert.That(matrix.Row(0).ToArray(), Is.EqualTo(new int[] { 1, 2, 3 }));
+        Assert.That(matrix.Row(1).ToArray(), Is.EqualTo(new int[] { 4, 5, 6 }));
 
-        var col0 = matrix.Column(0);
-        var col1 = matrix.Column(1);
-        var col2 = matrix.Column(2);
-        Assert.That(col0, Is.EqualTo(new ColumnVector<int>(new int[] { 1, 4 })));
-        Assert.That(col1, Is.EqualTo(new ColumnVector<int>(new int[] { 2, 5 })));
-        Assert.That(col2, Is.EqualTo(new ColumnVector<int>(new int[] { 3, 6 })));
-
-        Assert.That(matrix.Row(0), Is.EqualTo(new RowVector<int>(new int[] { 1, 2, 3 })));
-        Assert.That(matrix.Row(1), Is.EqualTo(new RowVector<int>(new int[] { 4, 5, 6 })));
+        Assert.That(matrix.Column(0).ToArray(), Is.EqualTo(new int[] { 1, 4 }));
+        Assert.That(matrix.Column(1).ToArray(), Is.EqualTo(new int[] { 2, 5 }));
+        Assert.That(matrix.Column(2).ToArray(), Is.EqualTo(new int[] { 3, 6 }));
     }
 
     [Test]

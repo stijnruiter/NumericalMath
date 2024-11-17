@@ -4,7 +4,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
-using LinearAlgebra.Structures.MatrixStorage;
 
 namespace LinearAlgebra;
 
@@ -72,14 +71,11 @@ public static class PluFactorizationOperations
             if (maxIndex != 0)
             {
                 pivots.SwapRows(i, maxIndex + i);
-                if (LU.Storage is RowMajorMatrixStorage<T> rm)
-                {
-                    rm.SwapRows(i, maxIndex + i);
-                }
+                LU.Storage.SwapRows(i, maxIndex + i);
                 permutations++;
             }
 
-            ReadOnlySpan<T> pivotRow = LU.Row(i).Span.Slice(i + 1);
+            RowVector<T> pivotRow = LU.Storage.GetRowSlice(i, i + 1);
 
             //Parallel.For(i + 1, LU.RowCount, j =>
             for (int j = i + 1; j < LU.RowCount; j++)
@@ -90,12 +86,27 @@ public static class PluFactorizationOperations
                 //for (int k = i + 1; k < LU.ColumnCount; k++)
                 //    LU[j, k] -= LU[j, i] * LU[i, k];
 
-                Span<T> elemRow = LU.Row(j).Span.Slice(i + 1);
+                RowVector<T> elemRow = LU.Storage.GetRowSlice(j, i+1);
                 ScalarProductSubtract(elemRow, LU[j, i], pivotRow);
             };
         }
 
         return (LU, pivots, permutations);
+    }
+
+    private static void ScalarProductSubtract<T>(AbstractVector<T> destination, T scalar, in AbstractVector<T> source) where T : struct, INumber<T>
+    {
+        if (destination.Stride == 1 && source.Stride == 1)
+        {
+            ScalarProductSubtract(destination.Span, scalar, source.Span);
+        } 
+        else
+        {
+            for (int i = 0; i < destination.Length; i++)
+            {
+                destination[i] -= scalar * source[i];
+            }
+        }
     }
 
     private static void ScalarProductSubtract<T>(Span<T> destination, T scalar, ReadOnlySpan<T> source) where T : struct, INumberBase<T>
@@ -186,17 +197,25 @@ public static class PluFactorizationOperations
     public static ColumnVector<T> ForwardSubstitution<T>(Matrix<T> L, ColumnVector<T> b) where T : struct, INumber<T>
     {
         ColumnVector<T> y = b.Copy();// new ColumnVector<T>(b.Length);
-        ForwardSubstitutionInPlace(L, y.Span);
+        ForwardSubstitutionInPlace(L, y);
         return y;
     }
 
-    internal static void ForwardSubstitutionInPlace<T>(Matrix<T> L, Span<T> b) where T : struct, INumber<T>
+    internal static void ForwardSubstitutionInPlace<T>(Matrix<T> L, ColumnVector<T> b) where T : struct, INumber<T>
     {
         for (int i = 0; i < b.Length; i++)
         {
             //for (int k = 0; k < i; k++)
             //    sum += L[i, k] * y[k];
-            b[i] -= VectorizationOps.DotProduct<T>(L.Row(i).Span.Slice(0, i), b.Slice(0, i));
+            RowVector<T> rowL = L.Storage.GetRowSlice(i, 0, i);
+            if (rowL.Stride == 1 && b.Stride == 1)
+            {
+                b[i] -= VectorizationOps.DotProduct<T>(rowL.Span, b.Span.Slice(0, i));
+            }
+            else
+            {
+                b[i] -= ElementwiseOps.DotProduct<T>(rowL.Span, rowL.Stride, b.Span.Slice(0, i), b.Stride);
+            }
         }
     }
 
@@ -217,7 +236,7 @@ public static class PluFactorizationOperations
     {
         for (int i = 0; i < B.RowCount; i++)
         {
-            ReadOnlySpan<T> partialRow = L.Row(i).Span.Slice(0, i);
+            RowVector<T> partialRow = L.Storage.GetRowSlice(i, 0, i);
             for (int j = 0; j < B.ColumnCount; j++)
             {
                 //for (int k = 0; k < i; k++)
@@ -225,9 +244,15 @@ public static class PluFactorizationOperations
                 //Y[i, j] = B[i, j] - sum;
 
                 // TODO: Might be faster if Y was column-major, then no copies need to be made
-                ReadOnlySpan<T> partialColumn = B.ColumnSlice(j, 0, i).Span;
-                B[i,j] -= ElementwiseOps.DotProduct(partialRow, 1, partialColumn, B.ColumnCount);
-
+                ColumnVector<T> partialColumn = B.ColumnSlice(j, 0, i);
+                if (partialRow.Stride == 1 && partialColumn.Stride == 1)
+                {
+                    B[i, j] -= VectorizationOps.DotProduct<T>(partialRow.Span, partialColumn.Span);
+                }
+                else
+                {
+                    B[i, j] -= ElementwiseOps.DotProduct<T>(partialRow.Span, partialRow.Stride, partialColumn.Span, partialColumn.Stride);
+                }
             }
         }
     }
@@ -241,17 +266,25 @@ public static class PluFactorizationOperations
     public static ColumnVector<T> BackwardSubstitution<T>(Matrix<T> U, ColumnVector<T> y) where T : struct, INumber<T>
     {
         ColumnVector<T> x = y.Copy();
-        BackwardSubstitutionInPlace(U, x.Span);
+        BackwardSubstitutionInPlace(U, x);
         return x;
     }
 
-    public static void BackwardSubstitutionInPlace<T>(Matrix<T> U, Span<T> y) where T : struct, INumber<T>
+    public static void BackwardSubstitutionInPlace<T>(Matrix<T> U, ColumnVector<T> y) where T : struct, INumber<T>
     {
         for (int i = y.Length - 1; i >= 0; i--)
         {
             //for (int k = i + 1; k < y.Length; k++)
             //    sum += U[i, k] * x[k];
-            y[i] = (y[i] - VectorizationOps.DotProduct<T>(U.Row(i).Span.Slice(i + 1), y.Slice(i + 1))) / U[i, i];
+            RowVector<T> rowU = U.Storage.GetRowSlice(i, i + 1);
+            if (rowU.Stride == 1 && y.Stride == 1)
+            {
+                y[i] = (y[i] - VectorizationOps.DotProduct<T>(rowU.Span, y.Span.Slice(i + 1))) / U[i, i];
+            }
+            else
+            {
+                y[i] = (y[i] - ElementwiseOps.DotProduct<T>(rowU.Span, rowU.Stride, y.Span.Slice(i + 1), y.Stride)) / U[i, i];
+            }
         }
     }
 
@@ -272,13 +305,20 @@ public static class PluFactorizationOperations
     {
         for (int i = Y.RowCount - 1; i >= 0; i--)
         {
-            ReadOnlySpan<T> partialRow = U.Row(i).Span.Slice(i + 1);
+            RowVector<T> partialRow = U.Storage.GetRowSlice(i, i + 1);
             for (int j = 0; j < Y.ColumnCount; j++)
             {
                 //for (int k = i + 1; k < Y.RowCount; k++)
                 //    sum += U[i, k] * X[k, j];
-                ReadOnlySpan<T> partialColumn = Y.ColumnSlice(j, i + 1).Span;
-                Y[i, j] = (Y[i, j] - ElementwiseOps.DotProduct(partialRow, 1, partialColumn, Y.ColumnCount)) / U[i, i];
+                ColumnVector<T> partialColumn = Y.ColumnSlice(j, i + 1);
+                if (partialColumn.Stride == 1 && partialRow.Stride == 1)
+                {
+                    Y[i, j] = (Y[i, j] - VectorizationOps.DotProduct<T>(partialRow.Span, partialColumn.Span)) / U[i, i];
+                }
+                else
+                {
+                    Y[i, j] = (Y[i, j] - ElementwiseOps.DotProduct<T>(partialRow.Span, partialRow.Stride, partialColumn.Span, partialColumn.Stride)) / U[i, i];
+                }
             }
         }
     }
@@ -301,7 +341,7 @@ public static class PluFactorizationOperations
         ColumnVector<T> y = ForwardSubstitution(lu, b);
 
         // Solve Ux=y
-        BackwardSubstitutionInPlace(lu, y.Span);
+        BackwardSubstitutionInPlace(lu, y);
 
         return y;
     }
@@ -346,10 +386,10 @@ public static class PluFactorizationOperations
         }
 
         // Solve Ly=b
-        ForwardSubstitutionInPlace(lu, Pb.Span);
+        ForwardSubstitutionInPlace(lu, Pb);
 
         // Solve Ux=y
-        BackwardSubstitutionInPlace(lu, Pb.Span);
+        BackwardSubstitutionInPlace(lu, Pb);
 
         return Pb;
     }
@@ -366,7 +406,11 @@ public static class PluFactorizationOperations
         Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
         for (int i = 0; i < Pb.RowCount; i++)
         {
-            B.Row(pivots[i]).Span.CopyTo(Pb.Row(i).Span);
+            for (int j = 0; j < B.ColumnCount; j++)
+            {
+                Pb[i, j] = B[pivots[i], j];
+            }
+            //B.Row(pivots[i]).ToArray().CopyTo(Pb.Row(i).Span);
         }
 
         // Solve LY=B

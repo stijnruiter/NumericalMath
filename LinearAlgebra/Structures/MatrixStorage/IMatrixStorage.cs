@@ -21,5 +21,7 @@ public interface IMatrixStorage<T> where T : struct, INumber<T>
     ColumnVector<T> GetColumnSlice(int j, int start);
     ColumnVector<T> GetColumnSlice(int j, int start, int length);
 
+    void SwapRows(int row1, int row2);
+
     IMatrixStorage<T> Copy();
 }

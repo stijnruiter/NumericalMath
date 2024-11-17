@@ -72,13 +72,16 @@ public static class Arithmetics
 
     public static Matrix<T> OuterProduct<T>(ColumnVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        Assertions.AreSameLength<T>(lhs.Span, rhs.Span);
+        Assertions.AreSameLength(lhs, rhs);
 
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)
         {
-            RowVector<T> resultRow = result.Row(i);
-            ElementwiseOperation(lhs[i], rhs.Span, (a, b) => a * b).CopyTo(resultRow.Span);
+            for (var j = 0; j < rhs.Length; j++)
+            {
+                result[i, j] = lhs[i] * rhs[j]; 
+            }
+            //ElementwiseOperation(lhs[i], rhs.Span, (a, b) => a * b).CopyTo(resultRow.Span);
         }
         return result;
     }

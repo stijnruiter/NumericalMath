@@ -37,6 +37,7 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
     {
         RowCount = values.GetLength(0);
         ColumnCount = values.GetLength(1);
+        // An array T[,] is stored row-major
         T[] destination = new T[RowCount * ColumnCount];
         Buffer.BlockCopy(values, 0, destination, 0, values.Length * Unsafe.SizeOf<T>());
         _values = destination;
@@ -82,12 +83,14 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
 
     public RowVector<T> GetRowSlice(int i, int start)
     {
-        throw new NotImplementedException();
+        AssertRowInRange(i);
+        return new RowVector<T>(_values.Slice(i * ColumnCount, ColumnCount).Slice(start), stride: 1);
     }
 
     public RowVector<T> GetRowSlice(int i, int start, int length)
     {
-        throw new NotImplementedException();
+        AssertRowInRange(i);
+        return new RowVector<T>(_values.Slice(i * ColumnCount, ColumnCount).Slice(start, length), stride: 1);
     }
 
     public void SetElement(int i, int j, T value)
