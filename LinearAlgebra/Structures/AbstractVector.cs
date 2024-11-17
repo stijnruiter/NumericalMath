@@ -52,6 +52,31 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         return true;
     }
 
+    /// <summary>
+    /// Get largest absolute column value, e.g. max(abs(matrix[startIndex.. , columnIndex]))
+    /// </summary>
+    /// <param name="matrix">The searchmatrix</param>
+    /// <returns>The max abs value and its index</returns>
+    public (T value, int index) AbsMax()
+    {
+        // Start with first element
+        ReadOnlySpan<T> values = Span;
+        int maxIndex = 0;
+        T maxValue = T.Abs(values[0]);
+        T nextValue;
+
+        // Loop over the rest of the rows
+        for (int i = 1; i < Length; i++)
+        {
+            if ((nextValue = T.Abs(values[i * Stride])) > maxValue)
+            {
+                maxValue = nextValue;
+                maxIndex = i;
+            }
+        }
+        return (maxValue, maxIndex);
+    }
+
     public override string ToString() => $"Vec{ColumnCount}x{RowCount} [{
         string.Join(", ", Enumerable.Range(0, Length).Select(i => this[i]))}]";
 }

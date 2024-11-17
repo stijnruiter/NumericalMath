@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
+using LinearAlgebra.Structures.MatrixStorage;
 
 namespace LinearAlgebra;
 
@@ -63,15 +64,18 @@ public static class PluFactorizationOperations
 
         for (int i = 0; i < LU.ColumnCount; i++)
         {
-            (T maxValue, int maxIndex) = LU.GetAbsMaxElementInColumn(i, i);
+            (T maxValue, int maxIndex) = LU.ColumnSlice(i, i).AbsMax();
 
             if (maxValue <= tolerance) // No pivot column found in column i
                 throw new DegenerateMatrixException();
 
-            if (maxIndex != i)
+            if (maxIndex != 0)
             {
-                pivots.SwapRows(i, maxIndex);
-                LU.SwapRows(i, maxIndex);
+                pivots.SwapRows(i, maxIndex + i);
+                if (LU.Storage is RowMajorMatrixStorage<T> rm)
+                {
+                    rm.SwapRows(i, maxIndex + i);
+                }
                 permutations++;
             }
 

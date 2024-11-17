@@ -1,8 +1,7 @@
-﻿using System;
+﻿using LinearAlgebra.Structures.MatrixStorage;
+using System;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace LinearAlgebra.Structures;
@@ -10,94 +9,61 @@ namespace LinearAlgebra.Structures;
 public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
 {
     // Row-major Matrix
-    protected Memory<T> _values;
-    internal Span<T> Span => _values.Span;
+    public IMatrixStorage<T> Storage { get; }
 
-    public int RowCount { get; }
+    //protected Memory<T> _values;
+    internal Span<T> Span => Storage.Span;
 
-    public int ColumnCount { get; }
+    public int RowCount => Storage.RowCount;
 
-    public Matrix(int rowCount, int columnCount, Memory<T> values)
+    public int ColumnCount => Storage.ColumnCount;
+
+    public Matrix(IMatrixStorage<T> storage)
     {
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        _values = values;
+        Storage = storage;
+    }
+
+    internal Matrix(int rowCount, int columnCount, Memory<T> memory)
+    {
+        Storage = new RowMajorMatrixStorage<T>(rowCount, columnCount, memory);
     }
 
     public Matrix(int rowCount, int columnCount)
     {
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        _values = new T[rowCount * columnCount];
+        Storage = new RowMajorMatrixStorage<T>(rowCount, columnCount);
     }
 
-    public Matrix(int rowCount, int columnCount, T scalar) : this(rowCount, columnCount)
+    public Matrix(int rowCount, int columnCount, T scalar)
     {
-        _values.Span.Fill(scalar);
+        Storage = new RowMajorMatrixStorage<T>(rowCount, columnCount, scalar);
     }
 
     public Matrix(T[,] values) 
     {
-        RowCount = values.GetLength(0);
-        ColumnCount = values.GetLength(1);
-        T[] destination = new T[RowCount * ColumnCount];
-        Buffer.BlockCopy(values, 0, destination, 0, values.Length * Unsafe.SizeOf<T>());
-        _values = destination;
+        Storage = new RowMajorMatrixStorage<T>(values);
     }
 
     public T this[int rowIndex, int columnIndex]
     {
-        // Matrix is column-major oriented
-        get
-        {
-            AssertIndexInRange(rowIndex, columnIndex);
-            return _values.Span[(rowIndex * ColumnCount) + columnIndex];
-        }
-
-        set
-        {
-            AssertIndexInRange(rowIndex, columnIndex);
-            _values.Span[(rowIndex * ColumnCount) + columnIndex] = value;
-        }
+        // Matrix is row-major oriented
+        get => Storage.GetElement(rowIndex, columnIndex);
+        set => Storage.SetElement(rowIndex, columnIndex, value);
     }
 
-    public ColumnVector<T> Column(int columnIndex)
-    {
-        AssertColumnInRange(columnIndex);
-        return new ColumnVector<T>(_values.Slice(columnIndex), stride: ColumnCount);
-    }
+    public ColumnVector<T> Column(int columnIndex) => Storage.GetColumn(columnIndex);
 
-    public ColumnVector<T> ColumnSlice(int columnIndex, int start)
-    {
-        AssertColumnInRange(columnIndex);
+    public ColumnVector<T> ColumnSlice(int columnIndex, int start) => Storage.GetColumnSlice(columnIndex, start);
 
-        if (start == RowCount)
-            return new ColumnVector<T>(0);
+    public ColumnVector<T> ColumnSlice(int columnIndex, int start, int length) => Storage.GetColumnSlice(columnIndex, start, length);
 
-        return new ColumnVector<T>(_values.Slice(start * ColumnCount + columnIndex), stride: ColumnCount);
-    }
-
-    public ColumnVector<T> ColumnSlice(int columnIndex, int start, int length)
-    {
-        AssertColumnInRange(columnIndex);
-        if (start == RowCount || length == 0)
-            return new ColumnVector<T>(0);
-        return new ColumnVector<T>(_values.Slice(start * ColumnCount + columnIndex, length * ColumnCount), stride: ColumnCount);
-    }
-
-
-    public RowVector<T> Row(int rowIndex)
-    {
-        AssertRowInRange(rowIndex);
-        return new RowVector<T>(_values.Slice(rowIndex * ColumnCount, ColumnCount), stride: 1);
-    }
+    public RowVector<T> Row(int rowIndex) => Storage.GetRow(rowIndex);
 
     public bool Equals(Matrix<T>? other)
     {
         if (other is null)
             return false;
 
-        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && _values.Span.SequenceEqual(other._values.Span);
+        return RowCount == other.RowCount && ColumnCount == other.ColumnCount && Storage.Span.SequenceEqual(other.Storage.Span);
     }
 
     public override string ToString()
@@ -115,23 +81,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return stringBuilder.ToString();
     }
 
-    public Matrix<T> Copy()
-    {
-        T[] copy = new T[_values.Length];
-        _values.CopyTo(copy);
-        return new Matrix<T>(RowCount, ColumnCount, copy);
-    }
-
-    public void SwapRows(int row1, int row2)
-    {
-        Span<T> rowView1 = Row(row1).Span;
-        Span<T> rowView2 = Row(row2).Span;
-        Span<T> tempCopy = new T[rowView1.Length];
-        rowView1.CopyTo(tempCopy);
-        rowView2.CopyTo(rowView1);
-        tempCopy.CopyTo(rowView2);
-    }
-
+    public Matrix<T> Copy() => new Matrix<T>(Storage.Copy());
 
     public ColumnVector<T> Diagonal()
     {
@@ -212,52 +162,11 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return result;
     }
 
-    private void AssertIndexInRange(int i, int j)
-    {
-        if (i < 0 || j < 0 || i >= RowCount|| j >= ColumnCount)
-            throw new IndexOutOfRangeException($"({i},{j}) not an index in {ColumnCount}x{RowCount} matrix.");
-    }
-
-    private void AssertRowInRange(int i)
-    {
-        if (i < 0 || i >= RowCount)
-            throw new IndexOutOfRangeException($"Row {i} not in {ColumnCount}x{RowCount} matrix.");
-    }
-
-    private void AssertColumnInRange(int j)
-    {
-        if (j < 0 || j >= ColumnCount)
-            throw new IndexOutOfRangeException($"Column {j} not in {ColumnCount}x{RowCount} matrix.");
-    }
-
-    /// <summary>
-    /// Get largest absolute column value, e.g. max(abs(matrix[startIndex.. , columnIndex]))
-    /// </summary>
-    /// <param name="matrix">The searchmatrix</param>
-    /// <returns>The max abs value and its index</returns>
-    public (T value, int index) GetAbsMaxElementInColumn(int columnIndex, int startIndex = 0) 
-    {
-        // Start with first element
-        ReadOnlySpan<T> values = Span;
-        int maxIndex = startIndex;
-        T maxValue = T.Abs(values[(startIndex * ColumnCount) + columnIndex]);
-        T nextValue;
-
-        // Loop over the rest of the rows
-        for (int i = startIndex + 1; i < RowCount; i++)
-        {
-            if ((nextValue = T.Abs(values[(i * ColumnCount) + columnIndex])) > maxValue)
-            {
-                maxValue = nextValue;
-                maxIndex = i;
-            }
-        }
-        return (maxValue, maxIndex);
-    }
+    
 
     public T DiagonalProduct()
     {
-        ReadOnlySpan<T> values = _values.Span;
+        ReadOnlySpan<T> values = Storage.Span;
         T product = T.MultiplicativeIdentity;
         for (int i = 0; i < ColumnCount; i++)
         {

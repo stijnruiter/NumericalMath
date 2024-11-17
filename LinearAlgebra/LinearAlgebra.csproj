@@ -7,6 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="LinearAlgebra.Test"/>
+    <InternalsVisibleTo Include="LinearAlgebra.Test" />
   </ItemGroup>
 </Project>
