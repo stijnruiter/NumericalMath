@@ -52,7 +52,7 @@ public class FiniteDifferenceMethods2
         Matrix<float> Iy = Matrix<float>.Identity(nNodesY);
 
         Matrix<float> A = Matrix<float>.Zero(nNodesX * nNodesY); 
-        Matrix<float> B = (Matrix<float>)Arithmetics.TensorProduct(Ax, Iy) + (Matrix<float>)Arithmetics.TensorProduct(Ix, Ay);
+        Matrix<float> B = Matrix<float>.TensorProduct(Ax, Iy) + Matrix<float>.TensorProduct(Ix, Ay);
         ColumnVector<float> F = ColumnVector<float>.Zero(nNodesX * nNodesY);
         ColumnVector<float> Uexact = ColumnVector<float>.Zero(nNodesX * nNodesY);
         float UexactFunc(float x, float y) => 2 * MathF.Sin(lambda1 * x) * MathF.Sin(lambda2 * y);
@@ -101,7 +101,7 @@ public class FiniteDifferenceMethods2
 
         ColumnVector<float> U = A.Solve(F);
 
-        Assert.That(Arithmetics.Norm2(U - Uexact), Is.EqualTo(0.190595f).Within(1e-5f));
-        Assert.That(Arithmetics.NormInf(U - Uexact), Is.EqualTo(0.012213f).Within(1e-5f));
+        Assert.That((U - Uexact).Norm2(), Is.EqualTo(0.190595f).Within(1e-5f));
+        Assert.That((U - Uexact).NormInf(), Is.EqualTo(0.012213f).Within(1e-5f));
     }
 }

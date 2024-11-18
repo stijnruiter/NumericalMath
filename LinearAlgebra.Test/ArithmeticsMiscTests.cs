@@ -11,10 +11,10 @@ public class ArithmeticsMiscTests
         RowVector<int> left = new RowVector<int>([ 1, 2 ]);
         RowVector<int> right = new RowVector<int>([ 4, 5, 6 ]);
 
-        Assert.That((RowVector<int>)Arithmetics.TensorProduct(left, right),
+        Assert.That((RowVector<int>)InternalArithmetics.TensorProduct(left, right),
             Is.EqualTo(new RowVector<int>([4, 5, 6, 8, 10, 12])));
 
-        Assert.That((RowVector<int>)Arithmetics.TensorProduct(right, left),
+        Assert.That((RowVector<int>)InternalArithmetics.TensorProduct(right, left),
             Is.EqualTo(new RowVector<int>([4, 8, 5, 10, 6, 12])));
     }
 
@@ -24,10 +24,10 @@ public class ArithmeticsMiscTests
         ColumnVector<int> left = new ColumnVector<int>([1, 2]);
         ColumnVector<int> right = new ColumnVector<int>([4, 5, 6]);
 
-        Assert.That((ColumnVector<int>)Arithmetics.TensorProduct(left, right),
+        Assert.That((ColumnVector<int>)InternalArithmetics.TensorProduct(left, right),
             Is.EqualTo(new ColumnVector<int>([4, 5, 6, 8, 10, 12])));
 
-        Assert.That((ColumnVector<int>)Arithmetics.TensorProduct(right, left),
+        Assert.That((ColumnVector<int>)InternalArithmetics.TensorProduct(right, left),
             Is.EqualTo(new ColumnVector<int>([4, 8, 5, 10, 6, 12])));
     }
 
@@ -57,7 +57,7 @@ public class ArithmeticsMiscTests
             {36, 40, 44, 48, 45, 50, 55, 60, 54, 60, 66, 72}     
         });
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(left, right), Is.EqualTo(expectedResultLeftRight));
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(left, right), Is.EqualTo(expectedResultLeftRight));
     }
 
     [Test]
@@ -66,12 +66,12 @@ public class ArithmeticsMiscTests
         ColumnVector<int> left = new ColumnVector<int>([1, 2]);
         RowVector<int> right = new RowVector<int>([4, 5, 6]);
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(left, right), Is.EqualTo(new Matrix<int>(new int[,] {
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(left, right), Is.EqualTo(new Matrix<int>(new int[,] {
             { 4,  5,  6 },
             { 8, 10, 12 }
         })));
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(right, left), Is.EqualTo(new Matrix<int>(new int[,] {
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(right, left), Is.EqualTo(new Matrix<int>(new int[,] {
             { 4,  5,  6 },
             { 8, 10, 12 }
         })));
@@ -86,7 +86,7 @@ public class ArithmeticsMiscTests
             { 7, 8, 9 }
         });
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(left, right), Is.EqualTo(new Matrix<int>(new int[,]
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(left, right), Is.EqualTo(new Matrix<int>(new int[,]
         {
             { 4, 5, 6},
             { 7, 8, 9},
@@ -96,7 +96,7 @@ public class ArithmeticsMiscTests
             {21, 24, 27}
         })));
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(right, left), Is.EqualTo(new Matrix<int>(new int[,]
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(right, left), Is.EqualTo(new Matrix<int>(new int[,]
         {
             {  4,  5,  6 },
             {  8, 10, 12 },
@@ -115,14 +115,14 @@ public class ArithmeticsMiscTests
             { 7, 8, 9 }
         });
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(right, left),
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(right, left),
             Is.EqualTo(new Matrix<int>(new int[,]
             {
                 { 4,  8, 12, 5, 10, 15, 6, 12, 18 },
                 { 7, 14, 21, 8, 16, 24, 9, 18, 27 }
             })));
 
-        Assert.That((Matrix<int>)Arithmetics.TensorProduct(left, right),
+        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(left, right),
             Is.EqualTo(new Matrix<int>(new int[,]
             {
                 { 4, 5, 6,  8, 10, 12, 12, 15, 18 },

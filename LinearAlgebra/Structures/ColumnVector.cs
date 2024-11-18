@@ -49,7 +49,7 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
         ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
 
         ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
-        VectorizationOps.Addition<T>(lhs.Span, rhs.Span, result.Span);
+        InternalArithmetics.Addition<T>(lhs, rhs, result);
         return result;
     }
 
@@ -58,25 +58,26 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
         ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
 
         ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
-        VectorizationOps.Subtraction<T>(lhs.Span, rhs.Span, result.Span);
+        InternalArithmetics.Subtraction<T>(lhs, rhs, result);
         return result;
     }
 
     public static ColumnVector<T> operator *(T lhs, ColumnVector<T> rhs)
     {
         ColumnVector<T> result = new ColumnVector<T>(rhs.Length);
-        VectorizationOps.ScalarProduct(lhs, rhs.Span, result.Span);
+        InternalArithmetics.ScalarProduct(lhs, rhs, result);
         return result;
     }
 
     public static ColumnVector<T> operator *(ColumnVector<T> lhs, T rhs)
     {
         ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
-        VectorizationOps.ScalarProduct(rhs, lhs.Span, result.Span);
+        InternalArithmetics.ScalarProduct(rhs, lhs, result);
         return result;
     }
 
-    public static Matrix<T> operator *(ColumnVector<T> lhs, RowVector<T> rhs) => Arithmetics.OuterProduct(lhs, rhs);
+    public static Matrix<T> operator *(ColumnVector<T> lhs, RowVector<T> rhs) 
+        => InternalArithmetics.OuterProduct(lhs, rhs);
 
     public static ColumnVector<T> Zero(int size) => new ColumnVector<T>(size);
     
@@ -92,6 +93,16 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
         Random random = new Random();
         ColumnVector<T> vector = new ColumnVector<T>(random.RandomNumbers<T>(size));
         return vector;
+    }
+
+    public ColumnVector<T> Slice(int start)
+    {
+        return new ColumnVector<T>(values.Slice(start * Stride), stride: Stride);
+    }
+
+    public ColumnVector<T> Slice(int start, int length)
+    {
+        return new ColumnVector<T>(values.Slice(start * Stride, length * Stride), stride: Stride);
     }
 
 }

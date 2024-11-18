@@ -56,7 +56,7 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
         ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
 
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.Addition<T>(lhs.Span, rhs.Span, result.Span);
+        InternalArithmetics.Addition<T>(lhs, rhs, result);
         return result;
     }
 
@@ -65,31 +65,26 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
         ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
 
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.Subtraction<T>(lhs.Span, rhs.Span, result.Span);
+        InternalArithmetics.Subtraction<T>(lhs, rhs, result);
         return result;
     }
 
     public static RowVector<T> operator *(T lhs, RowVector<T> rhs)
     {
         RowVector<T> result = new RowVector<T>(rhs.Length);
-        VectorizationOps.ScalarProduct(lhs, rhs.Span, result.Span);
+        InternalArithmetics.ScalarProduct(lhs, rhs, result);
         return result;
     }
 
     public static RowVector<T> operator *(RowVector<T> lhs, T rhs)
     {
         RowVector<T> result = new RowVector<T>(lhs.Length);
-        VectorizationOps.ScalarProduct(rhs, lhs.Span, result.Span);
+        InternalArithmetics.ScalarProduct(rhs, lhs, result);
         return result;
     }
 
-    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs)
-    {
-        if (lhs.Stride == 1 && rhs.Stride == 1)
-            return VectorizationOps.DotProduct<T>(lhs.Span, rhs.Span);
-
-        return ElementwiseOps.DotProduct<T>(lhs.Span, lhs.Stride, rhs.Span, rhs.Stride);
-    }
+    public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs) 
+        => InternalArithmetics.DotProduct(lhs, rhs);
 
     public RowVector<T> Copy()
     {
@@ -98,7 +93,7 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
         return new RowVector<T>(copy);
     }
 
-    public static RowVector<T>? Random(int size)
+    public static RowVector<T> Random(int size)
     {
         Random random = new Random();
         RowVector<T> vector = new RowVector<T>(random.RandomNumbers<T>(size));

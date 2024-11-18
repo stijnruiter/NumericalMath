@@ -172,4 +172,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         }
         return product;
     }
+
+    public static Matrix<T> TensorProduct(Matrix<T> lhs, Matrix<T> rhs) 
+        => (Matrix<T>)InternalArithmetics.TensorProduct(lhs, rhs);
 }

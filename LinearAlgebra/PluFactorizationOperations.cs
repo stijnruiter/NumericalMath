@@ -169,14 +169,7 @@ public static class PluFactorizationOperations
             //for (int k = 0; k < i; k++)
             //    sum += L[i, k] * y[k];
             RowVector<T> rowL = L.Storage.GetRowSlice(i, 0, i);
-            if (rowL.Stride == 1 && b.Stride == 1)
-            {
-                b[i] -= VectorizationOps.DotProduct<T>(rowL.Span, b.Span.Slice(0, i));
-            }
-            else
-            {
-                b[i] -= ElementwiseOps.DotProduct<T>(rowL.Span, rowL.Stride, b.Span.Slice(0, i), b.Stride);
-            }
+            b[i] -= InternalArithmetics.DotProduct(rowL, b.Slice(0, i));
         }
     }
 
@@ -204,16 +197,8 @@ public static class PluFactorizationOperations
                 //    Y[i, j] -= L[i, k] * Y[k, j];
                 //Y[i, j] = B[i, j] - sum;
 
-                // TODO: Might be faster if Y was column-major, then no copies need to be made
                 ColumnVector<T> partialColumn = B.ColumnSlice(j, 0, i);
-                if (partialRow.Stride == 1 && partialColumn.Stride == 1)
-                {
-                    B[i, j] -= VectorizationOps.DotProduct<T>(partialRow.Span, partialColumn.Span);
-                }
-                else
-                {
-                    B[i, j] -= ElementwiseOps.DotProduct<T>(partialRow.Span, partialRow.Stride, partialColumn.Span, partialColumn.Stride);
-                }
+                B[i, j] -= InternalArithmetics.DotProduct(partialRow, partialColumn);
             }
         }
     }
@@ -238,14 +223,8 @@ public static class PluFactorizationOperations
             //for (int k = i + 1; k < y.Length; k++)
             //    sum += U[i, k] * x[k];
             RowVector<T> rowU = U.Storage.GetRowSlice(i, i + 1);
-            if (rowU.Stride == 1 && y.Stride == 1)
-            {
-                y[i] = (y[i] - VectorizationOps.DotProduct<T>(rowU.Span, y.Span.Slice(i + 1))) / U[i, i];
-            }
-            else
-            {
-                y[i] = (y[i] - ElementwiseOps.DotProduct<T>(rowU.Span, rowU.Stride, y.Span.Slice(i + 1), y.Stride)) / U[i, i];
-            }
+            y[i] = (y[i] - InternalArithmetics.DotProduct<T>(rowU, y.Slice(i + 1))) / U[i, i];
+
         }
     }
 
@@ -272,14 +251,7 @@ public static class PluFactorizationOperations
                 //for (int k = i + 1; k < Y.RowCount; k++)
                 //    sum += U[i, k] * X[k, j];
                 ColumnVector<T> partialColumn = Y.ColumnSlice(j, i + 1);
-                if (partialColumn.Stride == 1 && partialRow.Stride == 1)
-                {
-                    Y[i, j] = (Y[i, j] - VectorizationOps.DotProduct<T>(partialRow.Span, partialColumn.Span)) / U[i, i];
-                }
-                else
-                {
-                    Y[i, j] = (Y[i, j] - ElementwiseOps.DotProduct<T>(partialRow.Span, partialRow.Stride, partialColumn.Span, partialColumn.Stride)) / U[i, i];
-                }
+                Y[i, j] = (Y[i, j] - InternalArithmetics.DotProduct<T>(partialRow, partialColumn)) / U[i, i];
             }
         }
     }
