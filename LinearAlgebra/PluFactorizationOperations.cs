@@ -126,46 +126,6 @@ public static class PluFactorizationOperations
     }
 
     /// <summary>
-    /// Doolittle's LU Decomposition. It has no permutations matrix.
-    /// LU = L + U - I, since 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="A"></param>
-    /// <returns></returns>
-    public static Matrix<T> LuDecompositionDoolittle<T>(Matrix<T> A) where T : struct, INumber<T>
-    {
-        Matrix<T> lu = new Matrix<T>(A.RowCount, A.ColumnCount);
-        T sum;
-
-        for (int i = 0; i < A.RowCount; i++)
-        {
-            // Upper tiangle
-            for (int j = i; j < A.ColumnCount; j++)
-            {
-                sum = T.AdditiveIdentity;
-                for (int k = 0; k < i; k++)
-                {
-                    sum += lu[i, k] * lu[k, j];
-                }
-                lu[i, j] = A[i, j] - sum;
-            }
-
-            // Lower triangle
-            for (int j = i + 1; j < A.ColumnCount; j++)
-            {
-                sum = T.AdditiveIdentity;
-                for (int k = 0; k < i; k++)
-                {
-                    sum += lu[j, k] * lu[k, i];
-                }
-                lu[j, i] = (A[j, i] - sum) / lu[i, i];
-            }
-        }
-
-        return lu;
-    }
-
-    /// <summary>
     /// Compute the determinant of matrix A using the PLU decomposition.
     /// </summary>
     /// <param name="A">A</param>
@@ -322,53 +282,6 @@ public static class PluFactorizationOperations
             }
         }
     }
-
-    /// <summary>
-    /// Solve the system Ax=b
-    /// </summary>
-    /// <param name="A">Lefthand side matrix</param>
-    /// <param name="b">Righthand side column vector</param>
-    /// <returns>The solution for x</returns>
-    public static ColumnVector<T> SolveUsingDoolittleLU<T>(Matrix<T> A, ColumnVector<T> b) where T : struct, INumber<T>
-    {
-        // LU decomposition: A = L U
-        Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
-
-        if (lu.DiagonalProduct() == T.Zero)
-            throw new NotInvertibleException(NonInvertibleReason.Singular);
-
-        // Solve Ly=b
-        ColumnVector<T> y = ForwardSubstitution(lu, b);
-
-        // Solve Ux=y
-        BackwardSubstitutionInPlace(lu, y);
-
-        return y;
-    }
-
-    /// <summary>
-    /// Solve the system AX=B
-    /// </summary>
-    /// <param name="A">Lefthand side matrix</param>
-    /// <param name="b">Righthand side matrix</param>
-    /// <returns>The solution for x</returns>
-    public static Matrix<T> SolveUsingDoolittleLU<T>(Matrix<T> A, Matrix<T> B) where T : struct, INumber<T>
-    {
-        // LU decomposition: A = L U
-        Matrix<T> lu = LuDecompositionDoolittle(A); // L + U - I
-
-        if (lu.DiagonalProduct() == T.Zero)
-            throw new NotInvertibleException(NonInvertibleReason.Singular);
-
-        // Solve Ly=b
-        Matrix<T> y = ForwardSubstitution(lu, B);
-
-        // Solve Ux=y
-        BackwardSubstitutionInPlace(lu, y);
-
-        return y;
-    }
-
 
     public static ColumnVector<T> SolveUsingPLU<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : struct, INumber<T>
     {

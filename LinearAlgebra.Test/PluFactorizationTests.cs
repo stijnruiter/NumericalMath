@@ -158,10 +158,6 @@ public class PluFactorizationTests
     [TestCaseSource(nameof(LinearSystemSets))]
     public void SolveMatrixVectorUsingLUDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
-        ColumnVector<float> x1 = PluFactorizationOperations.SolveUsingDoolittleLU(A, b);
-        Assert.That(x1, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-4f)));
-
-
         ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPLU(A, b, 1e-5f);
         Assert.That(x2, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
@@ -207,9 +203,6 @@ public class PluFactorizationTests
     [TestCaseSource(nameof(InverseMatricesSets))]
     public void InverseMatrixUsingLuDecomp(Matrix<float> A, Matrix<float> invA)
     {
-        Assert.That(PluFactorizationOperations.SolveUsingDoolittleLU(A, Matrix<float>.Identity(A.RowCount)), Is.EqualTo(invA)
-            .Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
-
         Assert.That(PluFactorizationOperations.SolveUsingPLU(A, Matrix<float>.Identity(A.RowCount), Constants.DefaultFloatTolerance), Is.EqualTo(invA)
             .Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
@@ -217,9 +210,6 @@ public class PluFactorizationTests
     [TestCaseSource(nameof(LinearSystemSets))]
     public void SolveMatrixMatrixUsingLuDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
-        Assert.That(PluFactorizationOperations.SolveUsingDoolittleLU(A, A), Is.EqualTo(Matrix<float>.Identity(A.RowCount))
-            .Using<Matrix<float>>((a, b) => a.ApproxEquals(b)));
-
         Assert.That(PluFactorizationOperations.SolveUsingPLU(A, A, Constants.DefaultFloatTolerance), Is.EqualTo(Matrix<float>.Identity(A.RowCount))
             .Using<Matrix<float>>((a, b) => a.ApproxEquals(b)));
     }
@@ -255,42 +245,6 @@ public class PluFactorizationTests
 
         Assert.That((X.RowCount, X.ColumnCount), Is.EqualTo((n, m)));
         Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 1e-4f)));
-    }
-
-
-    [TestCase(5)]
-    [TestCase(10)]
-    [TestCase(50)]
-    [TestCase(100)]
-    public void SolveMatrixVectorUsingDoolittle(int n)
-    {
-        Randomizer randomizer = new(1234567890);
-        Matrix<float> A = GenerateMatrix(n, n, randomizer.NextFloat);
-        ColumnVector<float> b = GenerateColumnVector(n, randomizer.NextFloat);
-
-        ColumnVector<float> x = PluFactorizationOperations.SolveUsingDoolittleLU(A, b);
-
-        Assert.That(x.RowCount, Is.EqualTo(n));
-        // Doolittle becomes less accurate due to many divisions, the larger the vector gets.
-        Assert.That(A * x, Is.EqualTo(b).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 1e-2f)));
-    }
-
-    [TestCase(5, 5)]
-    [TestCase(10, 5)]
-    [TestCase(50, 40)]
-    [TestCase(100, 70)]
-    public void SolveMatrixMatrixUsingDoolittle(int n, int m)
-    {
-        Randomizer randomizer = new(1234567890);
-
-        Matrix<float> A = GenerateMatrix(n, n, randomizer.NextFloat);
-        Matrix<float> B = GenerateMatrix(n, m, randomizer.NextFloat);
-
-        Matrix<float> X = PluFactorizationOperations.SolveUsingDoolittleLU(A, B);
-
-        Assert.That((X.RowCount, X.ColumnCount), Is.EqualTo((n, m)));
-        // Doolittle becomes less accurate due to many divisions, the larger the vector gets.
-        Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-2f)));
     }
 
     private static Matrix<T> GenerateMatrix<T>(int  n, int m, Func<T> randomGenerator) where T : struct, System.Numerics.INumber<T>

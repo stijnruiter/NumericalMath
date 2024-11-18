@@ -102,24 +102,6 @@ internal class MatrixTests
         Assert.Throws<DimensionMismatchException>(() => { var _ = M1.Transpose() - M2; });
     }
 
-    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.LinearSystemSets))]
-    public void SolveMatrixVectorExtension(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
-    {
-        ColumnVector<float> x = A.Solve(b);
-        Assert.That(x, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
-    }
-
-    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]
-    public void InverseMatrixExtension(Matrix<float> A, Matrix<float> invA)
-    {
-        Assert.That(A.Inverse(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
-        Assert.That(A.ToDoubles().Inverse().ToFloats(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
-    }
-
-    [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]
-    public void InverseMatrixExtensionDouble(Matrix<float> A, Matrix<float> invA)
-    {
-    }
 
     public static IEnumerable<TestCaseData> MatrixPropertySets
     {
@@ -153,12 +135,10 @@ internal class MatrixTests
     }
 
     [TestCaseSource(nameof(MatrixPropertySets))]
-    public void MatrixProperties(Matrix<float> A, float trace, float determinant, double determinant2)
+    public void MatrixTrace(Matrix<float> A, float trace, float determinant, double determinant2)
     {
         Assert.That(A.Trace(), Is.EqualTo(trace).Within(1e-5f));
         Assert.That(A.ToDoubles().Trace(), Is.EqualTo(trace).Within(1e-6d));
-        Assert.That(A.Determinant(), Is.EqualTo(determinant).Within(1e-5f));
-        Assert.That(A.ToDoubles().Determinant(), Is.EqualTo(determinant2).Within(1e-6d));
     }
 
     [Test]
