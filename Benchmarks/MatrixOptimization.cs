@@ -6,7 +6,7 @@ using System.Numerics;
 namespace Benchmarks;
 
 /**
- * Results 11/11/2024
+ * Results 18/11/2024
  * BenchmarkDotNet v0.14.0, Windows 11
  * AMD Ryzen 5 5500H with Radeon Graphics, 1 CPU, 8 logical and 4 physical cores
  * .NET SDK 8.0.303
@@ -15,33 +15,34 @@ namespace Benchmarks;
  * 
 | Method             | Size | Mean                | Error             | StdDev            | Median              | Ratio    | RatioSD |
 |------------------- |----- |--------------------:|------------------:|------------------:|--------------------:|---------:|--------:|
-| Addition           | 10   |            33.82 ns |          0.319 ns |          0.298 ns |            33.77 ns |     1.00 |    0.01 |
-| MathNetAddition    | 10   |            77.03 ns |          1.207 ns |          1.070 ns |            76.44 ns |     2.28 |    0.04 |
-| SolveMatrix        | 10   |         4,980.54 ns |         22.746 ns |         20.164 ns |         4,981.98 ns |   147.26 |    1.38 |
-| MathNetSolveMatrix | 10   |         1,464.73 ns |         11.514 ns |         10.206 ns |         1,461.40 ns |    43.31 |    0.47 |
-| SolveVector        | 10   |         1,771.61 ns |         17.392 ns |         14.523 ns |         1,766.45 ns |    52.38 |    0.61 |
-| MathNetSolveVector | 10   |           711.93 ns |          3.732 ns |          3.491 ns |           711.60 ns |    21.05 |    0.21 |
+| Addition           | 10   |            49.90 ns |          0.707 ns |          0.662 ns |            49.87 ns |     1.00 |    0.02 |
+| MathNetAddition    | 10   |            84.65 ns |          1.615 ns |          1.511 ns |            84.83 ns |     1.70 |    0.04 |
+| SolveMatrix        | 10   |         7,101.38 ns |        141.777 ns |        132.618 ns |         7,040.48 ns |   142.34 |    3.15 |
+| MathNetSolveMatrix | 10   |         1,507.03 ns |         19.703 ns |         17.467 ns |         1,505.91 ns |    30.21 |    0.51 |
+| SolveVector        | 10   |         1,814.56 ns |          7.257 ns |          6.433 ns |         1,814.31 ns |    36.37 |    0.48 |
+| MathNetSolveVector | 10   |           739.83 ns |          4.336 ns |          3.844 ns |           739.38 ns |    14.83 |    0.20 |
 |                    |      |                     |                   |                   |                     |          |         |
-| Addition           | 100  |         2,038.89 ns |         22.479 ns |         19.927 ns |         2,040.97 ns |     1.00 |    0.01 |
-| MathNetAddition    | 100  |         4,158.44 ns |         35.177 ns |         32.904 ns |         4,163.16 ns |     2.04 |    0.02 |
-| SolveMatrix        | 100  |     1,072,977.34 ns |     16,649.164 ns |     12,998.572 ns |     1,070,017.58 ns |   526.30 |    7.90 |
-| MathNetSolveMatrix | 100  |     1,004,488.27 ns |      6,377.225 ns |      5,965.260 ns |     1,006,257.03 ns |   492.71 |    5.47 |
-| SolveVector        | 100  |       148,380.21 ns |        676.545 ns |        564.946 ns |       148,445.81 ns |    72.78 |    0.74 |
-| MathNetSolveVector | 100  |       234,148.15 ns |      2,714.746 ns |      2,406.552 ns |       233,826.54 ns |   114.85 |    1.58 |
+| Addition           | 100  |         2,064.80 ns |         32.297 ns |         30.210 ns |         2,058.55 ns |     1.00 |    0.02 |
+| MathNetAddition    | 100  |         4,283.07 ns |         24.397 ns |         21.627 ns |         4,281.50 ns |     2.07 |    0.03 |
+| SolveMatrix        | 100  |       858,174.10 ns |      4,570.073 ns |      4,274.849 ns |       858,723.14 ns |   415.70 |    6.19 |
+| MathNetSolveMatrix | 100  |     1,011,176.86 ns |      3,627.130 ns |      3,215.357 ns |     1,011,184.28 ns |   489.82 |    7.07 |
+| SolveVector        | 100  |       165,420.39 ns |      1,189.420 ns |      1,112.585 ns |       165,333.74 ns |    80.13 |    1.24 |
+| MathNetSolveVector | 100  |       235,358.95 ns |        877.162 ns |        820.498 ns |       234,944.36 ns |   114.01 |    1.65 |
 |                    |      |                     |                   |                   |                     |          |         |
-| Addition           | 500  |       227,133.03 ns |     16,781.883 ns |     48,419.573 ns |       217,643.93 ns |     1.05 |    0.32 |
-| MathNetAddition    | 500  |       189,059.09 ns |      3,732.838 ns |      6,133.160 ns |       188,484.33 ns |     0.87 |    0.19 |
-| SolveMatrix        | 500  |   114,389,228.57 ns |  2,017,839.340 ns |  1,788,762.017 ns |   114,755,120.00 ns |   526.80 |  113.51 |
-| MathNetSolveMatrix | 500  |   159,672,882.09 ns |  2,034,345.158 ns |  4,834,836.863 ns |   158,090,366.67 ns |   735.35 |  159.60 |
-| SolveVector        | 500  |     7,209,045.31 ns |     20,649.281 ns |     18,305.049 ns |     7,208,526.95 ns |    33.20 |    7.14 |
-| MathNetSolveVector | 500  |    30,436,600.72 ns |    296,092.197 ns |    247,250.395 ns |    30,357,990.62 ns |   140.17 |   30.15 |
+| Addition           | 500  |       158,611.84 ns |      1,917.702 ns |      1,793.820 ns |       158,488.17 ns |     1.00 |    0.02 |
+| MathNetAddition    | 500  |       151,613.42 ns |      1,187.020 ns |      1,110.340 ns |       151,867.92 ns |     0.96 |    0.01 |
+| SolveMatrix        | 500  |    42,887,446.53 ns |    217,423.527 ns |    169,749.989 ns |    42,908,283.33 ns |   270.42 |    3.14 |
+| MathNetSolveMatrix | 500  |   156,459,301.67 ns |    557,019.511 ns |    990,101.693 ns |   156,153,566.67 ns |   986.55 |   12.44 |
+| SolveVector        | 500  |     7,876,395.57 ns |    149,404.129 ns |    159,860.745 ns |     7,860,850.00 ns |    49.66 |    1.12 |
+| MathNetSolveVector | 500  |    30,316,015.62 ns |     96,851.401 ns |     90,594.860 ns |    30,303,637.50 ns |   191.16 |    2.17 |
 |                    |      |                     |                   |                   |                     |          |         |
-| Addition           | 1000 |       914,673.94 ns |     17,841.675 ns |     27,777.341 ns |       907,698.83 ns |     1.00 |    0.04 |
-| MathNetAddition    | 1000 |       892,355.51 ns |     20,792.824 ns |     60,981.757 ns |       923,125.59 ns |     0.98 |    0.07 |
-| SolveMatrix        | 1000 |   841,347,580.00 ns |  6,370,411.044 ns |  5,958,886.446 ns |   839,792,100.00 ns |   920.64 |   27.89 |
-| MathNetSolveMatrix | 1000 | 1,463,665,333.33 ns | 16,664,660.218 ns | 15,588,133.515 ns | 1,462,550,000.00 ns | 1,601.61 |   50.06 |
-| SolveVector        | 1000 |    48,670,396.10 ns |    739,081.836 ns |    655,176.797 ns |    48,490,086.36 ns |    53.26 |    1.72 |
-| MathNetSolveVector | 1000 |   248,910,355.56 ns |  1,646,410.828 ns |  1,540,053.710 ns |   248,734,433.33 ns |   272.37 |    8.20 |
+| Addition           | 1000 |       872,315.43 ns |     25,486.357 ns |     75,147.104 ns |       886,235.11 ns |     1.01 |    0.12 |
+| MathNetAddition    | 1000 |       929,398.83 ns |     18,444.329 ns |     52,920.243 ns |       950,252.73 ns |     1.07 |    0.11 |
+| SolveMatrix        | 1000 |   280,622,045.24 ns |  5,520,913.560 ns |  6,572,255.446 ns |   276,135,400.00 ns |   324.06 |   28.69 |
+| MathNetSolveMatrix | 1000 | 1,505,439,373.33 ns | 15,838,850.265 ns | 14,815,670.372 ns | 1,502,964,800.00 ns | 1,738.46 |  149.58 |
+| SolveVector        | 1000 |    49,954,762.24 ns |    505,958.049 ns |    422,497.886 ns |    50,001,636.36 ns |    57.69 |    4.96 |
+| MathNetSolveVector | 1000 |   249,083,962.22 ns |  1,566,266.507 ns |  1,465,086.663 ns |   248,750,566.67 ns |   287.64 |   24.65 |
+*
 */
 
 public class MatrixOptimization<T> where T : struct, INumber<T>
@@ -75,9 +76,6 @@ public class MatrixOptimization<T> where T : struct, INumber<T>
 
     [Benchmark]
     public MathNet.Numerics.LinearAlgebra.Matrix<float> MathNetAddition() => mLeft + mRight;
-
-    //[Benchmark]
-    //public Matrix<T> Product() => left * right;
 
     [Benchmark]
     public Matrix<T> SolveMatrix() => PluFactorizationOperations.SolveUsingPLU(left, right, T.Zero);

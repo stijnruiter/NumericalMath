@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
+using LinearAlgebra.Structures.MatrixStorage;
 
 namespace LinearAlgebra;
 
@@ -316,7 +317,7 @@ public static class PluFactorizationOperations
             throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
-        Matrix<T> Pb = new Matrix<T>(B.RowCount, B.ColumnCount);
+        Matrix<T> Pb = new Matrix<T>(new ColumnMajorMatrixStorage<T>(B.RowCount, B.ColumnCount));
         for (int i = 0; i < Pb.RowCount; i++)
         {
             for (int j = 0; j < B.ColumnCount; j++)

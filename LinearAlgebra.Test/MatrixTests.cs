@@ -1,5 +1,4 @@
-﻿using LinearAlgebra.Comparers;
-using LinearAlgebra.Exceptions;
+﻿using LinearAlgebra.Exceptions;
 using LinearAlgebra.Structures;
 using System;
 using System.Collections.Generic;
