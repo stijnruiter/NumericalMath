@@ -15,7 +15,8 @@ public static class Arithmetics
 {
     private static T[] ElementwiseOperation<T>(ReadOnlySpan<T> lhs, ReadOnlySpan<T> rhs, Func<T, T, T> op) where T : struct, INumber<T>
     {
-        Assertions.AreSameLength(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
+
         T[] result = new T[lhs.Length];
         for (var i = 0; i < lhs.Length; i++)
         {
@@ -72,7 +73,7 @@ public static class Arithmetics
 
     public static Matrix<T> OuterProduct<T>(ColumnVector<T> lhs, RowVector<T> rhs) where T : struct, INumber<T>
     {
-        Assertions.AreSameLength(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
 
         Matrix<T> result = new Matrix<T>(lhs.RowCount, rhs.ColumnCount);
         for (var i = 0; i < lhs.Length; i++)

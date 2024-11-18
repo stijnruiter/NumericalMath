@@ -32,8 +32,19 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
 
     public T this[int index]
     {
-        get => values.Span[index * Stride];
-        set => values.Span[index * Stride] = value;
+        get
+        {
+            ThrowHelper.ThrowIfOutOfRange(index, this);
+
+            return values.Span[index * Stride];
+        }
+
+        set
+        {
+            ThrowHelper.ThrowIfOutOfRange(index, this);
+
+            values.Span[index * Stride] = value;
+        }
     }
 
     public bool Equals(AbstractVector<T>? other)
@@ -59,6 +70,8 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
     /// <returns>The max abs value and its index</returns>
     public (T value, int index) AbsMax()
     {
+        ThrowHelper.ThrowIfEmpty(this);
+
         // Start with first element
         ReadOnlySpan<T> values = Span;
         int maxIndex = 0;

@@ -46,7 +46,8 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static ColumnVector<T> operator +(ColumnVector<T> lhs, ColumnVector<T> rhs)
     {
-        Assertions.AreSameLength<T>(lhs.Span, rhs.Span);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
+
         ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
         VectorizationOps.Addition<T>(lhs.Span, rhs.Span, result.Span);
         return result;
@@ -54,7 +55,8 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static ColumnVector<T> operator -(ColumnVector<T> lhs, ColumnVector<T> rhs)
     {
-        Assertions.AreSameLength<T>(lhs.Span, rhs.Span);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
+
         ColumnVector<T> result = new ColumnVector<T>(lhs.Length);
         VectorizationOps.Subtraction<T>(lhs.Span, rhs.Span, result.Span);
         return result;
@@ -85,7 +87,7 @@ public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
         return new ColumnVector<T>(copy);
     }
 
-    public static ColumnVector<T>? Random(int size)
+    public static ColumnVector<T> Random(int size)
     {
         Random random = new Random();
         ColumnVector<T> vector = new ColumnVector<T>(random.RandomNumbers<T>(size));

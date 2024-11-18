@@ -53,7 +53,8 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static RowVector<T> operator +(RowVector<T> lhs, RowVector<T> rhs)
     {
-        Assertions.AreSameLength(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
+
         RowVector<T> result = new RowVector<T>(lhs.Length);
         VectorizationOps.Addition<T>(lhs.Span, rhs.Span, result.Span);
         return result;
@@ -61,7 +62,8 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static RowVector<T> operator -(RowVector<T> lhs, RowVector<T> rhs)
     {
-        Assertions.AreSameLength(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentLength(lhs, rhs);
+
         RowVector<T> result = new RowVector<T>(lhs.Length);
         VectorizationOps.Subtraction<T>(lhs.Span, rhs.Span, result.Span);
         return result;

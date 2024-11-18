@@ -8,7 +8,8 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 {
     public static Matrix<T> operator +(Matrix<T> lhs, Matrix<T> rhs)
     {
-        Assertions.AreSameSize(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentSize(lhs, rhs);
+
         Matrix<T> result = new Matrix<T>(lhs.RowCount, lhs.ColumnCount);
         VectorizationOps.Addition(lhs.Span, rhs.Span, result.Span);
         return result;
@@ -16,7 +17,8 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public static Matrix<T> operator -(Matrix<T> lhs, Matrix<T> rhs)
     {
-        Assertions.AreSameSize(lhs, rhs);
+        ThrowHelper.ThrowIfDifferentSize(lhs, rhs);
+
         Matrix<T> result = new Matrix<T>(lhs.RowCount, lhs.ColumnCount);
         VectorizationOps.Subtraction(lhs.Span, rhs.Span, result.Span);
         return result;

@@ -15,6 +15,14 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
 
     public ColumnMajorMatrixStorage(int rowCount, int columnCount)
     {
+        if (rowCount < 0)
+        {
+            throw new ArgumentException("RowCount cannot be negative.");
+        }
+        if (columnCount < 0)
+        {
+            throw new ArgumentException("ColumnCount cannot be negative.");
+        }
         RowCount = rowCount;
         ColumnCount = columnCount;
         _values = new T[rowCount * columnCount];
@@ -22,6 +30,14 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
 
     public ColumnMajorMatrixStorage(int rowCount, int columnCount, Memory<T> values)
     {
+        if (rowCount < 0)
+        {
+            throw new ArgumentException("RowCount cannot be negative.");
+        }
+        if (columnCount < 0)
+        {
+            throw new ArgumentException("ColumnCount cannot be negative.");
+        }
         RowCount = rowCount;
         ColumnCount = columnCount;
         _values = values;
@@ -32,11 +48,8 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
         _values.Span.Fill(scalar);
     }
 
-    public ColumnMajorMatrixStorage(T[,] values)
+    public ColumnMajorMatrixStorage(T[,] values) : this(values.GetLength(0), values.GetLength(1))
     {
-        RowCount = values.GetLength(0);
-        ColumnCount = values.GetLength(1);
-        _values = new T[RowCount * ColumnCount];
         for (int i = 0; i < RowCount; i++)
         {
             for (int j = 0; j < ColumnCount; j++)
@@ -55,36 +68,42 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
 
     public ColumnVector<T> GetColumn(int j)
     {
-        AssertColumnInRange(j);
+        ThrowHelper.ThrowIfColumnOutOfRange(j, this);
+
         return new ColumnVector<T>(_values.Slice(j * RowCount, RowCount), stride: 1);
     }
 
     public ColumnVector<T> GetColumnSlice(int j, int start)
     {
-        AssertColumnInRange(j);
+        ThrowHelper.ThrowIfColumnOutOfRange(j, this);
+
         return new ColumnVector<T>(_values.Slice(j * RowCount, RowCount).Slice(start), stride: 1);
     }
 
     public ColumnVector<T> GetColumnSlice(int j, int start, int length)
     {
-        AssertColumnInRange(j);
+        ThrowHelper.ThrowIfOutOfRange(0, j, this);
+
         return new ColumnVector<T>(_values.Slice(j * RowCount, RowCount).Slice(start, length), stride: 1);
     }
 
     public T GetElement(int i, int j)
     {
-        AssertIndexInRange(i, j);
+        ThrowHelper.ThrowIfOutOfRange(i, j, this);
+
         return _values.Span[i + j * RowCount];
     }
 
     public RowVector<T> GetRow(int i)
     {
+        ThrowHelper.ThrowIfRowOutOfRange(i, this);
+
         return new RowVector<T>(_values.Slice(i), stride: RowCount);
     }
 
     public RowVector<T> GetRowSlice(int i, int start)
     {
-        AssertRowInRange(i);
+        ThrowHelper.ThrowIfRowOutOfRange(i, this);
 
         if (start == ColumnCount)
             return new RowVector<T>(0);
@@ -94,7 +113,7 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
 
     public RowVector<T> GetRowSlice(int i, int start, int length)
     {
-        AssertColumnInRange(i);
+        ThrowHelper.ThrowIfRowOutOfRange(i, this);
 
         if (start == ColumnCount || length == 0)
             return new RowVector<T>(0);
@@ -104,35 +123,20 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
 
     public void SetElement(int i, int j, T value)
     {
-        AssertIndexInRange(i, j);
+        ThrowHelper.ThrowIfOutOfRange(i, j, this);
+
         _values.Span[i + j * RowCount] = value;
     }
 
     public void SwapRows(int row1, int row2)
     {
+        ThrowHelper.ThrowIfRowOutOfRange(row1, this);
+        ThrowHelper.ThrowIfRowOutOfRange(row2, this);
+
         Span<T> view = _values.Span;
         for (int j = 0; j < ColumnCount; j++)
         {
             (view[row1 + j * RowCount], view[row2 + j * RowCount]) = (view[row2 + j * RowCount], view[row1 + j * RowCount]);
         }
     }
-
-    private void AssertIndexInRange(int i, int j)
-    {
-        if (i < 0 || j < 0 || i >= RowCount || j >= ColumnCount)
-            throw new IndexOutOfRangeException($"({i},{j}) not an index in {ColumnCount}x{RowCount} matrix.");
-    }
-
-    private void AssertRowInRange(int i)
-    {
-        if (i < 0 || i >= RowCount)
-            throw new IndexOutOfRangeException($"Row {i} not in {ColumnCount}x{RowCount} matrix.");
-    }
-
-    private void AssertColumnInRange(int j)
-    {
-        if (j < 0 || j >= ColumnCount)
-            throw new IndexOutOfRangeException($"Column {j} not in {ColumnCount}x{RowCount} matrix.");
-    }
-
 }

@@ -101,7 +101,6 @@ internal class MatrixTests
         Assert.Throws<DimensionMismatchException>(() => { var _ = M1.Transpose() - M2; });
     }
 
-
     public static IEnumerable<TestCaseData> MatrixPropertySets
     {
         get

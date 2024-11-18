@@ -116,7 +116,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return result;
     }
 
-    public static Matrix<T>? Random(int rows, int columns)
+    public static Matrix<T> Random(int rows, int columns)
     {
         Random random = new Random();
         Matrix<T> matrix = new Matrix<T>(rows, columns, random.RandomNumbers<T>(rows * columns));
