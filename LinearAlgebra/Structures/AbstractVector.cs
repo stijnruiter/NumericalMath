@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -102,4 +103,6 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         }
         return values;
     }
+
+    public IEnumerator<T> GetEnumerator() => new VectorEnumerator<T>(this);
 }

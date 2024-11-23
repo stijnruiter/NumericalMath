@@ -1,11 +1,14 @@
 ﻿using LinearAlgebra.Structures.MatrixStorage;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace LinearAlgebra.Structures;
 
+[CollectionBuilder(typeof(StructureBuilder), nameof(StructureBuilder.CreateMatrix))]
 public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
 {
     // Row-major Matrix
@@ -123,6 +126,8 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return matrix;
     }
 
+    public static Matrix<T> Empty => new Matrix<T>(0, 0);
+
     public static Matrix<T> Zero(int size) => Zero(size, size);
 
     public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.Zero);
@@ -175,4 +180,6 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public static Matrix<T> TensorProduct(Matrix<T> lhs, Matrix<T> rhs) 
         => (Matrix<T>)InternalArithmetics.TensorProduct(lhs, rhs);
+
+    public IEnumerator<RowVector<T>> GetEnumerator() => new MatrixEnumerator<T>(this);
 }

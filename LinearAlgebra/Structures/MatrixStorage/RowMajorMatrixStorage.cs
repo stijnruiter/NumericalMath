@@ -59,6 +59,30 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
         _values = destination;
     }
 
+    public RowMajorMatrixStorage(ReadOnlySpan<RowVector<T>> rows)
+    {
+        if (rows.Length == 0)
+        {
+            RowCount = 0;
+            ColumnCount = 0;
+            _values = Array.Empty<T>();
+            return;
+        }
+
+        RowCount = rows.Length;
+        ColumnCount = rows[0].Length;
+        T[] destination = new T[RowCount * ColumnCount];
+        for(int i = 0; i < RowCount; i++)
+        {
+            ThrowHelper.ThrowIfDifferentLength(rows[0], rows[i]);
+            for (int j = 0; j < ColumnCount; j++)
+            {
+                destination[(i * ColumnCount) + j] = rows[i][j];
+            }
+        }
+        _values = destination;
+    }
+
     public ColumnVector<T> GetColumn(int j)
     {
         ThrowHelper.ThrowIfColumnOutOfRange(j, this);

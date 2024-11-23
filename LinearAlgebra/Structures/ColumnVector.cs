@@ -1,9 +1,10 @@
-﻿using LinearAlgebra.Exceptions;
-using System;
+﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace LinearAlgebra.Structures;
 
+[CollectionBuilder(typeof(StructureBuilder), nameof(StructureBuilder.CreateColumnVector))]
 public class ColumnVector<T> : AbstractVector<T> where T : struct, INumber<T>
 {
     public ColumnVector(T[] values) : this (new Memory<T>(values)) { }
