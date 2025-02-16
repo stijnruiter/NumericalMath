@@ -1,6 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
-using LinearAlgebra;
-using LinearAlgebra.Structures;
+using NumericalMath.LinearAlgebra;
+using NumericalMath.LinearAlgebra.Structures;
 using System.Numerics;
 
 namespace Benchmarks;
