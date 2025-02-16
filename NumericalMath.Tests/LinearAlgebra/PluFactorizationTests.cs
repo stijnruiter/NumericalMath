@@ -6,7 +6,7 @@ using NumericalMath.LinearAlgebra.Structures;
 using NumericalMath.LinearAlgebra;
 using NumericalMath.Comparers;
 
-namespace NumericalMath.Tests;
+namespace NumericalMath.Tests.LinearAlgebra;
 
 [TestFixture]
 public class PluFactorizationTests

@@ -2,7 +2,7 @@
 using NumericalMath.LinearAlgebra.Structures;
 using System;
 
-namespace NumericalMath.Tests;
+namespace NumericalMath.Tests.LinearAlgebra;
 
 [TestFixture]
 internal class VectorTests

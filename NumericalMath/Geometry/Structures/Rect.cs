@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace NumericalMath.Geometry.Structures;
 
@@ -21,5 +22,18 @@ public struct Rect(float left, float right, float bottom, float top)
         yield return new Vertex2(Right, Bottom);
         yield return new Vertex2(Right, Top);
         yield return new Vertex2(Left, Top);
+    }
+
+    public static Rect BoundingBox(ReadOnlySpan<Vertex2> vertices, float dilate = 0f)
+    {
+        Rect rect = new(float.MaxValue, float.MinValue, float.MaxValue, float.MinValue);
+        foreach (var vertex in vertices)
+        {
+            rect.Left = float.Min(rect.Left, vertex.X - dilate);
+            rect.Right = float.Max(rect.Right, vertex.X + dilate);
+            rect.Bottom = float.Min(rect.Bottom, vertex.Y - dilate);
+            rect.Top = float.Max(rect.Top, vertex.Y + dilate);
+        }
+        return rect;
     }
 }

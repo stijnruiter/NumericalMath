@@ -3,7 +3,7 @@ using NumericalMath.LinearAlgebra.Structures;
 using System;
 using System.Collections.Generic;
 
-namespace NumericalMath.Tests;
+namespace NumericalMath.Tests.LinearAlgebra;
 
 [TestFixture]
 internal class MatrixTests

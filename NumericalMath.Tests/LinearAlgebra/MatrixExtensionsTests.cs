@@ -1,7 +1,7 @@
 ﻿using NumericalMath.Comparers;
 using NumericalMath.LinearAlgebra.Structures;
 
-namespace NumericalMath.Tests;
+namespace NumericalMath.Tests.LinearAlgebra;
 
 [TestFixture]
 internal class MatrixExtensionsTests

@@ -15,7 +15,7 @@ public class Delaunay
             throw new ArgumentException("Unable to create triangulation. At least 3 vertices are required.");
 
         // Create a convex hull (rectangle) of the vertices, with a 0.1 margin
-        var bounds = GetContainingRect(vertices, 0.1f);
+        var bounds = Rect.BoundingBox(vertices, 0.1f);
         var convexHullVertices = new List<Vertex2>()
         {
             new(bounds.Left, bounds.Bottom),
@@ -71,19 +71,6 @@ public class Delaunay
         }
 
         return (convexHullVertices.Skip(4).ToArray(), interiorElements.ToArray(), boundaryElements.ToArray());
-    }
-
-    private static Rect GetContainingRect(ReadOnlySpan<Vertex2> vertices, float dilate)
-    {
-        Rect rect = new(float.MaxValue, float.MinValue, float.MaxValue, float.MinValue);
-        foreach (var vertex in vertices)
-        {
-            rect.Left = float.Min(rect.Left, vertex.X - dilate);
-            rect.Right = float.Max(rect.Right, vertex.X + dilate);
-            rect.Bottom = float.Min(rect.Bottom, vertex.Y - dilate);
-            rect.Top = float.Max(rect.Top, vertex.Y + dilate);
-        }
-        return rect;
     }
 
     private static void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements, List<LineElement> boundaryElements)
@@ -171,9 +158,9 @@ public class Delaunay
     {
         foreach (var element in elements)
         {
-            var v1 = vertices[(int)element.I];
-            var v2 = vertices[(int)element.J];
-            var v3 = vertices[(int)element.K];
+            var v1 = vertices[element.I];
+            var v2 = vertices[element.J];
+            var v3 = vertices[element.K];
             if (!PointInTriangle(point, v1, v2, v3))
                 continue;
 

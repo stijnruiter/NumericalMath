@@ -1,7 +1,7 @@
 ﻿using NumericalMath.LinearAlgebra;
 using NumericalMath.LinearAlgebra.Structures;
 
-namespace NumericalMath.Tests;
+namespace NumericalMath.Tests.LinearAlgebra;
 
 [TestFixture]
 public class ArithmeticsMiscTests
