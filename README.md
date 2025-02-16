@@ -1,32 +1,28 @@
-# Numerical Analysis from scratch
+# Numerical Mathematics from scratch
 
-This repository is my implementation of some basic numerical analysis topics written in C#/.NET. 
-I intend to not use any libraries to start with, thus I do intend to write the Linear Algebra functionality
-on my own as well. 
+This repository is my implementation of numerical analysis procedures purely written in C# using .NET Core 8. I intend to only use .NET Core as a dependency, and write all computational mathematics procedures from scratch. I will use benchmark tools for optimization purposes.
 
-I know that there are various libraries out there, that will most likely do a much better job at
-executing all the necessary computations, but now I am forced to learn some more aspects of the 
-computational mathematics field.
+The main goal of this project is to learn more about the .NET functionalities for computational mathematics as well as scientific computing algorithms. 
 
 ## Implemented
 
+### Linear Algebra
 - Dense Column/Row vector data structure
-	- Underlying array data structure
-- Dense Matrix data structure (row-major only)
-	- Jagged array of arrays, for more flexibility down the line compared to [,] arrays
+	- Use INumber\<T\> interface
+- Dense Matrix data structure (both row-major and column major storage)
 - Some simple matrix vector arithmetics (nothing optimized)
 	- Operators for scalar/vector/matrix arithmetics
-- _LU_ factorization (Doolittle method with and without partial pivoting)
-- Solving the system **Ax=b** and **AX=B** using LU factorization
-- Determinant and inverse of matrix, using the LU factorization
-- First two approximation of Ordinary Differential Equations (ODE) using the Finite Difference Method (as unit tests)
-	- Poisson's equation
-	- Helmholtz equation
+- _LU_ factorization (with partial pivoting)
+	- Use SIMD instructions to speed up larger systems. [Results](Benchmarks/MatrixOptimization.cs)
+- Solving the system **Ax=b** and **AX=B** 
+- Determinant and inverse of matrix
 
+### Geometry
+- Incremental Delaunay triangulation
 
 ## Roadmap
 
-### Numerics
+### General
 
 - Rational numbers
 - Derivatives
@@ -37,16 +33,11 @@ computational mathematics field.
 - Cholesky factorization
 - Sparse matrices
 
-### Numerical Analysis
+### Geometry
+- Mesh generation
+- B-splines
 
-- Generic expression of ODE/PDE
-- Finite Difference Methods, 1D/2D implementation
-- Finite Element Methods
-	- Create simple geometeries
-	- 1D implementation
-	- 2D imdplementation
-	- Test functions
-- Finite Volume Methods
+### Numerical Methods
+- Finite Difference Method
+- Finite Element Method
 - Material Point Method
-	- Legrange Polynomials
-	- B-splines

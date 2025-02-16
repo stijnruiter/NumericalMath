@@ -9,12 +9,11 @@ using System.Text;
 namespace NumericalMath.LinearAlgebra.Structures;
 
 [CollectionBuilder(typeof(StructureBuilder), nameof(StructureBuilder.CreateMatrix))]
-public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
+public partial class Matrix<T> : IRectanglarMatrix<T> where T : struct, INumber<T>
 {
     // Row-major Matrix
     public IMatrixStorage<T> Storage { get; }
 
-    //protected Memory<T> _values;
     internal Span<T> Span => Storage.Span;
 
     public int RowCount => Storage.RowCount;

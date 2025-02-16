@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace NumericalMath.LinearAlgebra.Structures;
 
-public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> where T : struct, INumber<T>
+public partial class Matrix<T> : IRectanglarMatrix<T> where T : struct, INumber<T>
 {
     public static Matrix<T> operator +(Matrix<T> lhs, Matrix<T> rhs)
     {

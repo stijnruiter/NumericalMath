@@ -17,7 +17,7 @@ internal class MatrixExtensionsTests
     public void InverseMatrixExtension(Matrix<float> A, Matrix<float> invA)
     {
         Assert.That(A.Inverse(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
-        Assert.That(A.ToDoubles().Inverse().ToFloats(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
+        Assert.That(A.ToDoubles().Inverse().ToSingles(), Is.EqualTo(invA).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-6f)));
     }
 
     [TestCaseSource(typeof(MatrixTests), nameof(MatrixTests.MatrixPropertySets))]

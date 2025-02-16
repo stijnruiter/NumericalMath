@@ -1,5 +1,4 @@
-﻿using NumericalMath.LinearAlgebra;
-using System;
+﻿using System;
 using System.Numerics;
 
 namespace NumericalMath.LinearAlgebra.Structures;
@@ -20,7 +19,7 @@ public static class MatrixExtensions
     }
 
     public static Matrix<double> ToDoubles(this Matrix<float> matrix) => matrix.Convert(System.Convert.ToDouble);
-    public static Matrix<float> ToFloats(this Matrix<double> matrix) => matrix.Convert(System.Convert.ToSingle);
+    public static Matrix<float> ToSingles(this Matrix<double> matrix) => matrix.Convert(System.Convert.ToSingle);
 
     public static ColumnVector<float> Solve(this Matrix<float> A, ColumnVector<float> b, float degenerateTolerance = Constants.DefaultFloatTolerance)
         => PluFactorizationOperations.SolveUsingPLU(A, b, degenerateTolerance);
