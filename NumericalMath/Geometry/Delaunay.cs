@@ -10,11 +10,33 @@ namespace NumericalMath.Geometry;
 public class Delaunay : DelaunayBase
 {
     public Delaunay() { }
+
+    internal override float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
+    {
+        return new Matrix<float>(new float[,]{
+            { a.X, a.Y, a.X * a.X + a.Y * a.Y, 1 },
+            { b.X, b.Y, b.X * b.X + b.Y * b.Y, 1},
+            { c.X, c.Y, c.X * c.X + c.Y * c.Y, 1},
+            { d.X, d.Y, d.X * d.X + d.Y * d.Y, 1} }).Determinant();
+    }
 }
 
 public class DelaunayOpt : DelaunayBase
 {
     public DelaunayOpt() { }
+
+    internal override float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
+    {
+        float aLengthSquared = a.X * a.X + a.Y * a.Y;
+        float bLengthSquared = b.X * b.X + b.Y * b.Y;
+        float cLengthSquared = c.X * c.X + c.Y * c.Y;
+        float dLengthSquared = d.X * d.X + d.Y * d.Y;
+
+        return a.X * Matrix<float>.Determinant(b.Y, bLengthSquared, 1, c.Y, cLengthSquared, 1, d.Y, dLengthSquared, 1)
+            - a.Y * Matrix<float>.Determinant(b.X, bLengthSquared, 1, c.X, cLengthSquared, 1, d.X, dLengthSquared, 1)
+            + aLengthSquared * Matrix<float>.Determinant(b.X, b.Y, 1, c.X, c.Y, 1, d.X, d.Y, 1)
+            - Matrix<float>.Determinant(b.X, b.Y, bLengthSquared, c.X, c.Y, cLengthSquared, d.X, d.Y, dLengthSquared);
+    }
 }
 
 public abstract class DelaunayBase
@@ -182,12 +204,5 @@ public abstract class DelaunayBase
         return InCircleDet(a, b, c, d) > 0;
     }
 
-    internal float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
-    {
-        return new Matrix<float>(new float[,]{
-            { a.X, a.Y, a.X * a.X + a.Y * a.Y, 1 },
-            { b.X, b.Y, b.X * b.X + b.Y * b.Y, 1},
-            { c.X, c.Y, c.X * c.X + c.Y * c.Y, 1},
-            { d.X, d.Y, d.X * d.X + d.Y * d.Y, 1} }).Determinant();
-    }
+    internal abstract float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d);
 }
