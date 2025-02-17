@@ -7,9 +7,20 @@ using System.Linq;
 
 namespace NumericalMath.Geometry;
 
-public class Delaunay
+public class Delaunay : DelaunayBase
 {
-    public static (Vertex2[] Vertices, TriangleElement[] Interior, LineElement[] Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
+    public Delaunay() { }
+}
+
+public class DelaunayOpt : DelaunayBase
+{
+    public DelaunayOpt() { }
+}
+
+public abstract class DelaunayBase
+{
+
+    public (Vertex2[] Vertices, TriangleElement[] Interior, LineElement[] Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
     {
         if (vertices.Length < 3)
             throw new ArgumentException("Unable to create triangulation. At least 3 vertices are required.");
@@ -69,7 +80,7 @@ public class Delaunay
         return boundaryElements;
     }
 
-    private static void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements)
+    private void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements)
     {
         var element = FindElement(p, vertices, elements);
         var indexP = vertices.Count;
@@ -90,7 +101,7 @@ public class Delaunay
         return i < 3 && j < 3;
     }
 
-    private static void FlipTest(int indexP, int i, int j, List<Vertex2> vertices, List<TriangleElement> elements)
+    private void FlipTest(int indexP, int i, int j, List<Vertex2> vertices, List<TriangleElement> elements)
     {
         if (IsBoundaryEdge(i,j))
             return;
@@ -166,12 +177,12 @@ public class Delaunay
         throw new Exception($"Point {point} not in elements.");
     }
 
-    private static bool InCircle(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
+    private bool InCircle(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
     {
         return InCircleDet(a, b, c, d) > 0;
     }
 
-    private static float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
+    internal float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
     {
         return new Matrix<float>(new float[,]{
             { a.X, a.Y, a.X * a.X + a.Y * a.Y, 1 },

@@ -8,5 +8,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NumericalMath.Tests" />
+    <InternalsVisibleTo Include="Benchmarks" />
   </ItemGroup>
 </Project>

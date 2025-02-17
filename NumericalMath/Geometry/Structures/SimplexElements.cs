@@ -9,6 +9,8 @@ public struct LineElement(int i, int j)
 {
     public int I = i;
     public int J = j;
+
+    public override string ToString() => $"({I}, {J})";
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -18,6 +20,8 @@ public struct TriangleElement(int i, int j, int k)
     public int I = i;
     public int J = j;
     public int K = k;
+
+    public override string ToString() => $"({I}, {J}, {K})";
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -28,4 +32,6 @@ public struct TetrahedronElement(int i, int j, int k, int l)
     public int J = j;
     public int K = k;
     public int L = l;
+
+    public override string ToString() => $"({I}, {J}, {K}, {L})";
 }
