@@ -14,66 +14,62 @@ public class Delaunay
         if (vertices.Length < 3)
             throw new ArgumentException("Unable to create triangulation. At least 3 vertices are required.");
 
-        // Create a convex hull (rectangle) of the vertices, with a 0.1 margin
-        var bounds = Rect.BoundingBox(vertices, 0.1f);
+        // Create an "infinite" containing triangle
+        var containingTriangle = Triangle.ContainingTriangle(vertices, 1e5f);
         var convexHullVertices = new List<Vertex2>()
         {
-            new(bounds.Left, bounds.Bottom),
-            new(bounds.Right, bounds.Bottom),
-            new(bounds.Right, bounds.Top),
-            new(bounds.Left, bounds.Top),
+            containingTriangle.V1,
+            containingTriangle.V2,
+            containingTriangle.V3,
         };
-        var interiorElements = new List<TriangleElement> {
-            new(0, 1, 2), new(0, 2, 3)
-        };
-
-        var boundaryElements = new List<LineElement> {
-            new(0, 1),new(1, 2),
-            new(2, 3),new(0, 3)
-        };
+        var interiorElements = new List<TriangleElement> { new(0, 1, 2) };
 
         // Insert points using Delaunay
         for (int i = 0; i < vertices.Length; i++)
         {
-            InsertPoint(vertices[i], convexHullVertices, interiorElements, boundaryElements);
+            InsertPoint(vertices[i], convexHullVertices, interiorElements);
         }
 
-        // Remove the 4 convex hull points
-        boundaryElements.Clear();
+        var boundaryElements = RemoveContainingTriangle(interiorElements);
+        return (convexHullVertices.Skip(3).ToArray(), interiorElements.ToArray(), boundaryElements.ToArray());
+    }
+
+    private static List<LineElement> RemoveContainingTriangle(List<TriangleElement> interiorElements)
+    {
+        var boundaryElements = new List<LineElement>();
         for (var i = interiorElements.Count - 1; i >= 0; i--)
         {
             var element = interiorElements[i];
-            if (element.I < 4)
+            if (element.I < 3)
             {
-                if (element.J >= 4 && element.K >= 4)
+                if (element.J >= 3 && element.K >= 3)
                 {
-                    boundaryElements.Add(new LineElement(element.J - 4, element.K - 4));
+                    boundaryElements.Add(new LineElement(element.J - 3, element.K - 3));
                 }
                 interiorElements.RemoveAt(i);
             }
-            else if (element.J < 4)
+            else if (element.J < 3)
             {
-                if (element.K >= 4)
+                if (element.K >= 3)
                 {
-                    boundaryElements.Add(new LineElement(element.K - 4, element.I - 4));
+                    boundaryElements.Add(new LineElement(element.K - 3, element.I - 3));
                 }
                 interiorElements.RemoveAt(i);
             }
-            else if (element.K < 4)
+            else if (element.K < 3)
             {
-                boundaryElements.Add(new LineElement(element.I - 4, element.J - 4));
+                boundaryElements.Add(new LineElement(element.I - 3, element.J - 3));
                 interiorElements.RemoveAt(i);
             }
             else
             {
-                interiorElements[i] = new TriangleElement(element.I - 4, element.J - 4, element.K - 4);
+                interiorElements[i] = new TriangleElement(element.I - 3, element.J - 3, element.K - 3);
             }
         }
-
-        return (convexHullVertices.Skip(4).ToArray(), interiorElements.ToArray(), boundaryElements.ToArray());
+        return boundaryElements;
     }
 
-    private static void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements, List<LineElement> boundaryElements)
+    private static void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements)
     {
         var element = FindElement(p, vertices, elements);
         var indexP = vertices.Count;
@@ -83,14 +79,20 @@ public class Delaunay
         elements.Remove(element);
         elements.AddRange(ReplaceElement(indexP, element));
 
-        FlipTest(indexP, element.I, element.J, vertices, elements, boundaryElements);
-        FlipTest(indexP, element.J, element.K, vertices, elements, boundaryElements);
-        FlipTest(indexP, element.K, element.I, vertices, elements, boundaryElements);
+        FlipTest(indexP, element.I, element.J, vertices, elements);
+        FlipTest(indexP, element.J, element.K, vertices, elements);
+        FlipTest(indexP, element.K, element.I, vertices, elements);
     }
 
-    private static void FlipTest(int indexP, int i, int j, List<Vertex2> vertices, List<TriangleElement> elements, List<LineElement> boundaryElements)
+    private static bool IsBoundaryEdge(int i, int j)
     {
-        if (boundaryElements.Contains(new LineElement(i, j)) || boundaryElements.Contains(new LineElement(j, i)))
+        // It is an edge if both indices are 0, 1, 2
+        return i < 3 && j < 3;
+    }
+
+    private static void FlipTest(int indexP, int i, int j, List<Vertex2> vertices, List<TriangleElement> elements)
+    {
+        if (IsBoundaryEdge(i,j))
             return;
 
         // TODO: store neighbours
@@ -120,8 +122,8 @@ public class Delaunay
         elements.Add(newE2);
 
         // Test new edges 
-        FlipTest(indexP, i, otherP, vertices, elements, boundaryElements);
-        FlipTest(indexP, otherP, j, vertices, elements, boundaryElements);
+        FlipTest(indexP, i, otherP, vertices, elements);
+        FlipTest(indexP, otherP, j, vertices, elements);
     }
 
     private static int MirroredVertex(TriangleElement element, int i, int j)
@@ -158,13 +160,8 @@ public class Delaunay
     {
         foreach (var element in elements)
         {
-            var v1 = vertices[element.I];
-            var v2 = vertices[element.J];
-            var v3 = vertices[element.K];
-            if (!PointInTriangle(point, v1, v2, v3))
-                continue;
-
-            return element;
+            if (Triangle.Contains(point, vertices[element.I], vertices[element.J], vertices[element.K]))
+                return element;
         }
         throw new Exception($"Point {point} not in elements.");
     }
@@ -181,22 +178,5 @@ public class Delaunay
             { b.X, b.Y, b.X * b.X + b.Y * b.Y, 1},
             { c.X, c.Y, c.X * c.X + c.Y * c.Y, 1},
             { d.X, d.Y, d.X * d.X + d.Y * d.Y, 1} }).Determinant();
-    }
-
-    private static bool PointInTriangle(Vertex2 p, Vertex2 v1, Vertex2 v2, Vertex2 v3)
-    {
-        var d1 = HalfPlaneSide(p, v1, v2);
-        var d2 = HalfPlaneSide(p, v2, v3);
-        var d3 = HalfPlaneSide(p, v3, v1);
-
-        var has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-        var has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-
-        return !(has_neg && has_pos);
-
-        float HalfPlaneSide(Vertex2 p1, Vertex2 p2, Vertex2 p3)
-        {
-            return (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
-        }
     }
 }

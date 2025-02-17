@@ -9,6 +9,8 @@ public struct Vertex2(float x, float y)
 {
     public float X = x;
     public float Y = y;
+
+    public override string ToString() => $"({X}, {Y})";
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -18,4 +20,6 @@ public struct Vertex3(float x, float y, float z)
     public float X = x;
     public float Y = y;
     public float Z = z;
+
+    public override string ToString() => $"({X}, {Y}, {Z})";
 }

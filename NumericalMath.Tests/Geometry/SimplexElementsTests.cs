@@ -89,7 +89,7 @@ public class SimplexElementsTests
     [Test]
     public void RectElement()
     {
-        var rect = new Rect();
+        var rect = new Rectangle();
         Assert.Multiple(() =>
         {
             Assert.That(rect.Left, Is.EqualTo(0f));
@@ -105,7 +105,7 @@ public class SimplexElementsTests
     [TestCase(5, -10, 5, -5, -15, -10)]
     public void RectElement(float left, float right, float bottom, float top, float width, float height)
     {
-        var rect = new Rect(left, right, bottom, top);
+        var rect = new Rectangle(left, right, bottom, top);
         Assert.Multiple(() =>
         {
             Assert.That(rect.Left, Is.EqualTo(left));
@@ -120,7 +120,7 @@ public class SimplexElementsTests
     [Test]
     public void RectCorners()
     {
-        var rect = new Rect(0, 1, 2, 3);
+        var rect = new Rectangle(0, 1, 2, 3);
         var vertices = rect.ToVertices().ToArray();
         Assert.That(vertices, Has.Length.EqualTo(4));
         Assert.That(vertices[0], Is.EqualTo(new Vertex2(0, 2)));
@@ -137,10 +137,10 @@ public class SimplexElementsTests
     {
         var x = GetFloats(nPoints).ToArray();
         var y = GetFloats(nPoints).ToArray();
-        var expectedRectangle = new Rect(x.Min() - dilate, x.Max() + dilate, y.Min() - dilate, y.Max() + dilate);
+        var expectedRectangle = new Rectangle(x.Min() - dilate, x.Max() + dilate, y.Min() - dilate, y.Max() + dilate);
 
         var vertices = x.Zip(y).Select(pair => new Vertex2(pair.First, pair.Second)).ToArray();
-        var boundingBox = Rect.BoundingBox(vertices, dilate);
+        var boundingBox = Rectangle.BoundingBox(vertices, dilate);
         Assert.That(boundingBox.Left, Is.EqualTo(expectedRectangle.Left).Within(1e-5));
         Assert.That(boundingBox.Right, Is.EqualTo(expectedRectangle.Right).Within(1e-5));
         Assert.That(boundingBox.Bottom, Is.EqualTo(expectedRectangle.Bottom).Within(1e-5));

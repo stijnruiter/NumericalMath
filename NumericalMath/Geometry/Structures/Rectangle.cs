@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NumericalMath.Geometry.Structures;
 
-public struct Rect(float left, float right, float bottom, float top)
+public struct Rectangle(float left, float right, float bottom, float top)
 {
     public float Left = left;
     public float Right = right;
@@ -24,9 +24,9 @@ public struct Rect(float left, float right, float bottom, float top)
         yield return new Vertex2(Left, Top);
     }
 
-    public static Rect BoundingBox(ReadOnlySpan<Vertex2> vertices, float dilate = 0f)
+    public static Rectangle BoundingBox(ReadOnlySpan<Vertex2> vertices, float dilate = 0f)
     {
-        Rect rect = new(float.MaxValue, float.MinValue, float.MaxValue, float.MinValue);
+        Rectangle rect = new(float.MaxValue, float.MinValue, float.MaxValue, float.MinValue);
         foreach (var vertex in vertices)
         {
             rect.Left = float.Min(rect.Left, vertex.X - dilate);
