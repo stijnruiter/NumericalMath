@@ -41,125 +41,146 @@ public class DelaunayOpt : DelaunayBase
 
 public abstract class DelaunayBase
 {
+    protected List<Vertex2> _vertices = [];
+    protected List<TriangleElement> _interiorElements = [];
+    protected List<LineElement> _boundaryElements = [];
 
-    public (Vertex2[] Vertices, TriangleElement[] Interior, LineElement[] Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
     {
-        if (vertices.Length < 3)
-            throw new ArgumentException("Unable to create triangulation. At least 3 vertices are required.");
+        Initialize(vertices);
 
-        // Create an "infinite" containing triangle
-        var containingTriangle = Triangle.ContainingTriangle(vertices, 1e5f);
-        var convexHullVertices = new List<Vertex2>()
+        // Insert points using Delaunay
+        for (int i = 3; i < _vertices.Count; i++)
         {
+            InsertPoint(i);
+        }
+
+        Cleanup();
+        return (_interiorElements, _boundaryElements);
+    }
+
+    private void Initialize(ReadOnlySpan<Vertex2> vertices)
+    {
+        // Create an "infinite" containing triangle
+        var containingTriangle = Triangle.ContainingTriangle(vertices.ToArray(), 1e5f);
+        _vertices =
+        [
             containingTriangle.V1,
             containingTriangle.V2,
             containingTriangle.V3,
-        };
-        var interiorElements = new List<TriangleElement> { new(0, 1, 2) };
-
-        // Insert points using Delaunay
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            InsertPoint(vertices[i], convexHullVertices, interiorElements);
-        }
-
-        var boundaryElements = RemoveContainingTriangle(interiorElements);
-        return (convexHullVertices.Skip(3).ToArray(), interiorElements.ToArray(), boundaryElements.ToArray());
+            .. vertices,
+        ];
+        _interiorElements = [new(0, 1, 2)];
+        _boundaryElements = [];
     }
 
-    private static List<LineElement> RemoveContainingTriangle(List<TriangleElement> interiorElements)
+    private void Cleanup()
     {
-        var boundaryElements = new List<LineElement>();
-        for (var i = interiorElements.Count - 1; i >= 0; i--)
+        for (var i = _interiorElements.Count - 1; i >= 0; i--)
         {
-            var element = interiorElements[i];
+            var element = _interiorElements[i];
             if (element.I < 3)
             {
                 if (element.J >= 3 && element.K >= 3)
                 {
-                    boundaryElements.Add(new LineElement(element.J - 3, element.K - 3));
+                    _boundaryElements.Add(new LineElement(element.J - 3, element.K - 3));
                 }
-                interiorElements.RemoveAt(i);
+                _interiorElements.RemoveAt(i);
             }
             else if (element.J < 3)
             {
                 if (element.K >= 3)
                 {
-                    boundaryElements.Add(new LineElement(element.K - 3, element.I - 3));
+                    _boundaryElements.Add(new LineElement(element.K - 3, element.I - 3));
                 }
-                interiorElements.RemoveAt(i);
+                _interiorElements.RemoveAt(i);
             }
             else if (element.K < 3)
             {
-                boundaryElements.Add(new LineElement(element.I - 3, element.J - 3));
-                interiorElements.RemoveAt(i);
+                _boundaryElements.Add(new LineElement(element.I - 3, element.J - 3));
+                _interiorElements.RemoveAt(i);
             }
             else
             {
-                interiorElements[i] = new TriangleElement(element.I - 3, element.J - 3, element.K - 3);
+                _interiorElements[i] = new TriangleElement(element.I - 3, element.J - 3, element.K - 3);
             }
         }
-        return boundaryElements;
     }
 
-    private void InsertPoint(Vertex2 p, List<Vertex2> vertices, List<TriangleElement> elements)
+    private void InsertPoint(int indexP)
     {
-        var element = FindElement(p, vertices, elements);
-        var indexP = vertices.Count;
+        var p = _vertices[indexP];
+        (var element, var index) = FindElement(indexP);
 
         // Replace ABC by ABP, ACP, BCP
-        vertices.Add(p);
-        elements.Remove(element);
-        elements.AddRange(ReplaceElement(indexP, element));
+        _interiorElements.RemoveAt(index);
+        _interiorElements.Add(new(indexP, element.I, element.J));
+        _interiorElements.Add(new(indexP, element.J, element.K));
+        _interiorElements.Add(new(indexP, element.K, element.I));
 
-        FlipTest(indexP, element.I, element.J, vertices, elements);
-        FlipTest(indexP, element.J, element.K, vertices, elements);
-        FlipTest(indexP, element.K, element.I, vertices, elements);
+        FlipTest(indexP, element.I, element.J);
+        FlipTest(indexP, element.J, element.K);
+        FlipTest(indexP, element.K, element.I);
     }
 
-    private static bool IsBoundaryEdge(int i, int j)
+    private void FlipTest(int indexP, int i, int j)
     {
-        // It is an edge if both indices are 0, 1, 2
-        return i < 3 && j < 3;
-    }
-
-    private void FlipTest(int indexP, int i, int j, List<Vertex2> vertices, List<TriangleElement> elements)
-    {
-        if (IsBoundaryEdge(i,j))
+        if (IsBoundaryEdge(i, j))
             return;
 
         // TODO: store neighbours
-        var elementsWithEdge = FindElementsWithEdge(i, j, elements).ToArray();
+        var elementsWithEdge = FindElementsWithEdge(i, j).ToArray();
         Debug.Assert(elementsWithEdge.Length == 2);
-        (var element_pij, var other_ij) = Contains(elementsWithEdge[0], indexP) ?
-            (elementsWithEdge[0], elementsWithEdge[1]) : (elementsWithEdge[1], elementsWithEdge[0]);
+        
+        (var element_pij, var other_ij) = Contains(elementsWithEdge[0], indexP) ? (elementsWithEdge[0], elementsWithEdge[1]) : (elementsWithEdge[1], elementsWithEdge[0]);
 
         Debug.Assert(!Contains(other_ij, indexP));
         Debug.Assert(Contains(element_pij, indexP));
 
-        var otherP = MirroredVertex(other_ij, i, j);
-
-        var vi = vertices[i];
-        var vj = vertices[j];
-        var vp = vertices[indexP];
-        var vOther = vertices[otherP];
-        if (!InCircle(vj, vp, vi, vOther))
+        var otherP = GetThirdIndex(other_ij, i, j);
+        if (!InCircle(j, indexP, i, otherP))
             return;
 
         // Flip edges
-        var newE1 = new TriangleElement(indexP, i, otherP);
-        var newE2 = new TriangleElement(indexP, otherP, j);
-        elements.Remove(element_pij);
-        elements.Remove(other_ij);
-        elements.Add(newE1);
-        elements.Add(newE2);
+        _interiorElements.Remove(element_pij);
+        _interiorElements.Remove(other_ij);
+        _interiorElements.Add(new TriangleElement(indexP, i, otherP));
+        _interiorElements.Add(new TriangleElement(indexP, otherP, j));
 
         // Test new edges 
-        FlipTest(indexP, i, otherP, vertices, elements);
-        FlipTest(indexP, otherP, j, vertices, elements);
+        FlipTest(indexP, i, otherP);
+        FlipTest(indexP, otherP, j);
     }
 
-    private static int MirroredVertex(TriangleElement element, int i, int j)
+    private IEnumerable<TriangleElement> FindElementsWithEdge(int i, int j)
+    {
+        foreach (var element in _interiorElements)
+        {
+            if (Contains(element, i) && Contains(element, j))
+                yield return element;
+        }
+    }
+
+    private (TriangleElement Element, int Index) FindElement(int indexP)
+    {
+        Vertex2 point = _vertices[indexP];
+        for (var i = 0; i < _interiorElements.Count; i++)
+        {
+            var element = _interiorElements[i];
+            if (Triangle.Contains(point, _vertices[element.I], _vertices[element.J], _vertices[element.K]))
+                return (element, i);
+        }
+        throw new Exception($"Point {point} not in elements.");
+    }
+
+    private bool InCircle(int ai, int bi, int ci, int di)
+    {
+        return InCircleDet(_vertices[ai], _vertices[bi], _vertices[ci], _vertices[di]) > 0;
+    }
+
+    internal abstract float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d);
+
+    private static int GetThirdIndex(TriangleElement element, int i, int j)
     {
         if (element.I != i && element.I != j)
             return element.I;
@@ -173,36 +194,9 @@ public abstract class DelaunayBase
         return element.I == i || element.J == i || element.K == i;
     }
 
-    private static IEnumerable<TriangleElement> FindElementsWithEdge(int i, int j, List<TriangleElement> elements)
+    private static bool IsBoundaryEdge(int i, int j)
     {
-        foreach (var element in elements)
-        {
-            if (Contains(element, i) && Contains(element, j))
-                yield return element;
-        }
+        // It is an edge if both indices are 0, 1, 2
+        return i < 3 && j < 3;
     }
-
-    private static IEnumerable<TriangleElement> ReplaceElement(int indexP, TriangleElement element)
-    {
-        yield return new TriangleElement(indexP, element.I, element.J);
-        yield return new TriangleElement(indexP, element.J, element.K);
-        yield return new TriangleElement(indexP, element.K, element.I);
-    }
-
-    private static TriangleElement FindElement(Vertex2 point, List<Vertex2> vertices, List<TriangleElement> elements)
-    {
-        foreach (var element in elements)
-        {
-            if (Triangle.Contains(point, vertices[element.I], vertices[element.J], vertices[element.K]))
-                return element;
-        }
-        throw new Exception($"Point {point} not in elements.");
-    }
-
-    private bool InCircle(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
-    {
-        return InCircleDet(a, b, c, d) > 0;
-    }
-
-    internal abstract float InCircleDet(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d);
 }

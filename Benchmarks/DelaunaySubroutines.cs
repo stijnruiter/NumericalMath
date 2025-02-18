@@ -2,6 +2,7 @@
 using NumericalMath.Geometry;
 using NumericalMath.Geometry.Structures;
 using System;
+using System.Collections.Generic;
 
 namespace Benchmarks;
 
@@ -13,16 +14,16 @@ namespace Benchmarks;
   *  DefaultJob : .NET 8.0.12 (8.0.1224.60305), X64 RyuJIT AVX2
   *
   *
-  *| Method            | Size | Mean      | Error    | StdDev    | Ratio | RatioSD | Gen0     | Allocated  | Alloc Ratio |
-  *|------------------ |----- |----------:|---------:|----------:|------:|--------:|---------:|-----------:|------------:|
-  *| DelaunayDefault   | 10   |  50.78 us | 0.851 us |  1.324 us |  1.00 |    0.04 |  26.1841 |  107.06 KB |        1.00 |
-  *| DelaunayOptimized | 10   |  16.26 us | 0.317 us |  0.444 us |  0.32 |    0.01 |  10.2844 |   42.07 KB |        0.39 |
-  *|                   |      |           |          |           |       |         |          |            |             |
-  *| DelaunayDefault   | 25   | 169.70 us | 3.353 us |  6.045 us |  1.00 |    0.05 |  95.4590 |  390.66 KB |        1.00 |
-  *| DelaunayOptimized | 25   |  73.86 us | 1.469 us |  2.454 us |  0.44 |    0.02 |  48.8281 |  199.51 KB |        0.51 |
-  *|                   |      |           |          |           |       |         |          |            |             |
-  *| DelaunayDefault   | 50   | 493.36 us | 9.815 us | 23.705 us |  1.00 |    0.07 | 290.0391 | 1185.88 KB |        1.00 |
-  *| DelaunayOptimized | 50   | 259.79 us | 5.135 us |  6.306 us |  0.53 |    0.03 | 188.4766 |  770.83 KB |        0.65 |
+  *| Method            | Size | Mean      | Error    | StdDev   | Ratio | RatioSD | Gen0     | Allocated  | Alloc Ratio |
+  *|------------------ |----- |----------:|---------:|---------:|------:|--------:|---------:|-----------:|------------:|
+  *| DelaunayDefault   | 10   |  42.78 us | 0.782 us | 0.731 us |  1.00 |    0.02 |  25.2075 |  103.07 KB |        1.00 |
+  *| DelaunayOptimized | 10   |  12.91 us | 0.248 us | 0.296 us |  0.30 |    0.01 |   9.3231 |   38.08 KB |        0.37 |
+  *|                   |      |           |          |          |       |         |          |            |             |
+  *| DelaunayDefault   | 25   | 139.54 us | 1.838 us | 1.719 us |  1.00 |    0.02 |  90.3320 |  369.82 KB |        1.00 |
+  *| DelaunayOptimized | 25   |  56.87 us | 0.905 us | 0.889 us |  0.41 |    0.01 |  43.7012 |  178.66 KB |        0.48 |
+  *|                   |      |           |          |          |       |         |          |            |             |
+  *| DelaunayDefault   | 50   | 392.30 us | 7.442 us | 7.309 us |  1.00 |    0.03 | 268.5547 | 1098.42 KB |        1.00 |
+  *| DelaunayOptimized | 50   | 205.22 us | 2.219 us | 1.853 us |  0.52 |    0.01 | 167.2363 |  683.38 KB |        0.62 |
   *
   *
   *| Method                 | Mean        | Error     | StdDev    | Gen0   | Allocated |
@@ -34,8 +35,6 @@ namespace Benchmarks;
 [MemoryDiagnoser]
 public class DelaunaySubroutines
 {
-    private readonly DelaunayBase _delaunayDefault = new Delaunay();
-    private readonly DelaunayBase _delaunayOpt = new DelaunayOpt();
 
     //[Benchmark]
     //public void InCircleDeterminant()
@@ -77,14 +76,17 @@ public class DelaunaySubroutines
         }
     }
 
+    private readonly DelaunayBase _delaunayDefault = new Delaunay();
+    private readonly DelaunayBase _delaunayOpt = new DelaunayOpt();
+
     [Benchmark(Baseline = true)]
-    public (Vertex2[] Vertices, TriangleElement[] Interior, LineElement[] Boundary) DelaunayDefault()
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayDefault()
     {
         return _delaunayDefault.CreateTriangulation(_vertices);
     }
 
     [Benchmark]
-    public (Vertex2[] Vertices, TriangleElement[] Interior, LineElement[] Boundary) DelaunayOptimized()
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayOptimized()
     {
         return _delaunayOpt.CreateTriangulation(_vertices);
     }

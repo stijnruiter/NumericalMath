@@ -144,7 +144,6 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
     {
 
         var output = _delaunay.CreateTriangulation(input);
-        Assert.That(output.Vertices, Is.EquivalentTo(input));
         Assert.That(output.Interior, Is.EquivalentTo(expectedInterior)
             .Using<TriangleElement>(CyclicalIdentical));
 
