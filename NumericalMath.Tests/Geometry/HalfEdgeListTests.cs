@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using NumericalMath.Geometry.Structures;
 
@@ -6,6 +9,29 @@ namespace NumericalMath.Tests.Geometry;
 [TestFixture]
 public class HalfEdgeTriangulationTests
 {
+    [Test]
+    public void HalfEdgeStructureDefault()
+    {
+        var halfEdge = new HalfEdge();
+        var halfEdgeDefault = new HalfEdge(-1, -1, -1, -1, -1, -1);
+        Assert.That(halfEdge, Is.EqualTo(halfEdgeDefault));
+    }
+    
+    [Test]
+    public void HalfEdgeStructure()
+    {
+        var halfEdge = new HalfEdge(4, 5, 6, 7, 8, 9);
+        
+        Assert.That(halfEdge.V1, Is.EqualTo(4));
+        Assert.That(halfEdge.V2, Is.EqualTo(5));
+        Assert.That(halfEdge.PrevEdge, Is.EqualTo(6));
+        Assert.That(halfEdge.NextEdge, Is.EqualTo(7));
+        Assert.That(halfEdge.TwinEdge, Is.EqualTo(8));
+        Assert.That(halfEdge.ElementIndex, Is.EqualTo(9));
+        
+        Assert.That(halfEdge.ToString(), Does.Contain("(4, 5)"));
+    }
+    
     [Test]
     public void HalfEdgeDataStructureConstructoir()
     {
@@ -103,7 +129,83 @@ public class HalfEdgeTriangulationTests
         }
     }
     
-    private static LineElement ToLine(HalfEdge halfEdge) => new LineElement(halfEdge.V1, halfEdge.V2);
+    [TestCaseSource(nameof(TwoElementTriangulation))]
+    public void HalfEdgeElement(HalfEdgeTriangulation triangulation, HalfEdge[] expectedEdges1, HalfEdge[] expectedEdges2)
+    {
+        var edges = triangulation.Edges.ToArray();
+        Assume.That(edges, Has.Length.EqualTo(6));
+        Assume.That(triangulation.ElementCount, Is.EqualTo(2));
+        Assume.That(edges, Is.EquivalentTo(expectedEdges1.Concat(expectedEdges2)));
+        
+        Assert.That(() => triangulation.GetElement(-1), Throws.Exception.TypeOf<IndexOutOfRangeException>());
+        Assert.That(() => triangulation.GetElement(2), Throws.Exception.TypeOf<IndexOutOfRangeException>());
+        Assert.That(() => new HalfEdgeElement(edges, 6), Throws.Exception.TypeOf<IndexOutOfRangeException>());
+        Assert.That(() => new HalfEdgeElement(edges, -1), Throws.Exception.TypeOf<IndexOutOfRangeException>());
+        
+        Assert.That( new HalfEdgeElement(edges, 0).ToArray(), Is.EquivalentTo(expectedEdges1));
+        Assert.That( new HalfEdgeElement(edges, 1).ToArray(), Is.EquivalentTo(expectedEdges1));
+        Assert.That( new HalfEdgeElement(edges, 2).ToArray(), Is.EquivalentTo(expectedEdges1));
+        Assert.That( new HalfEdgeElement(edges, 3).ToArray(), Is.EquivalentTo(expectedEdges2));
+        Assert.That( new HalfEdgeElement(edges, 4).ToArray(), Is.EquivalentTo(expectedEdges2));
+        Assert.That( new HalfEdgeElement(edges, 5).ToArray(), Is.EquivalentTo(expectedEdges2));
+
+        var enumerator = new HalfEdgeElement(edges, 0);
+        var edgesFromEnumerable = AsWeakEnumerable(enumerator);
+        Assert.That(edgesFromEnumerable, Is.EquivalentTo(expectedEdges1));
+    }
+
+    [TestCaseSource(nameof(TwoElementTriangulation))]
+    public void HalfEdgeEnumerator(HalfEdgeTriangulation triangulation, HalfEdge[] expectedEdges1, HalfEdge[] expectedEdges2)
+    {
+        var edges = triangulation.Edges.ToArray();
+        Assume.That(edges, Has.Length.EqualTo(6));
+        Assume.That(triangulation.ElementCount, Is.EqualTo(2));
+        Assume.That(edges, Is.EquivalentTo(expectedEdges1.Concat(expectedEdges2)));
+        var haflEdgeElement = new HalfEdgeElement(edges, 0);
+        using var enumerator = haflEdgeElement.GetEnumerator();
+        List<HalfEdge> edgesFromEnum = new();
+        while (enumerator.MoveNext())
+        {
+            edgesFromEnum.Add(enumerator.Current);
+        }
+        Assert.That(edgesFromEnum, Is.EquivalentTo(expectedEdges1));
+        enumerator.Reset();
+        edgesFromEnum.Clear();
+        
+        while (enumerator.MoveNext())
+        {
+            edgesFromEnum.Add(enumerator.Current);
+        }
+        Assert.That(edgesFromEnum, Is.EquivalentTo(expectedEdges1));
+        
+
+
+
+    }
+
+    private static IEnumerable<TestCaseData> TwoElementTriangulation()
+    {
+        var halfEdges = new HalfEdgeTriangulation(2);
+        halfEdges.AddTriangle(0, 1, 2);
+        halfEdges.AddTriangle(1, 3, 2);
+        var expectedEdges1 = new[]
+        {
+            new HalfEdge(0, 1, 2, 1, -1, 0),
+            new HalfEdge(1, 2, 0, 2, 5, 0),
+            new HalfEdge(2, 0, 1, 0, -1, 0),
+        };
+        var expectedEdges2 = new[]
+        {
+            new HalfEdge(1, 3, 5, 4, -1, 1),
+            new HalfEdge(3, 2, 3, 5, -1, 1),
+            new HalfEdge(2, 1, 4, 3, 1, 1),
+        };
+        return [new TestCaseData(halfEdges, expectedEdges1, expectedEdges2).SetArgDisplayNames("Two Triangles")];
+    }
+    
+    private static LineElement ToLine(HalfEdge halfEdge) => new(halfEdge.V1, halfEdge.V2);
     private static bool IsBoundary(HalfEdge halfEdge) => halfEdge.TwinEdge == -1;
     private static bool IsNoBoundary(HalfEdge halfEdge) => !IsBoundary(halfEdge);
+
+    private static List<object?> AsWeakEnumerable(IEnumerable source) => source.Cast<object?>().ToList();
 }

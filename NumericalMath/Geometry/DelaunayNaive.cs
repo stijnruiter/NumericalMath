@@ -10,7 +10,10 @@ namespace NumericalMath.Geometry;
 public interface IDelaunay
 {
     static abstract float InCircleDeterminant(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d);
-    static abstract (List<TriangleElement> Interior, List<LineElement> Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices);
+    static abstract IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices);
+    (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh();
+
+    public int FindElement(Vertex2 point);
 }
 
 internal class DelaunayNaive : IDelaunay
@@ -31,11 +34,9 @@ internal class DelaunayNaive : IDelaunay
         Cleanup();
     }
 
-    public static (List<TriangleElement> Interior, List<LineElement> Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
-    {
-        var delaunay = new DelaunayNaive(vertices);
-        return (delaunay._interiorElements, delaunay._boundaryElements);
-    }
+    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices) => new DelaunayNaive(vertices);
+
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh() => (_interiorElements, _boundaryElements);
 
     private void Initialize(ReadOnlySpan<Vertex2> vertices)
     {
@@ -55,8 +56,8 @@ internal class DelaunayNaive : IDelaunay
 
     private void InsertPoint(int indexP)
     {
-        var p = _vertices[indexP];
-        (var element, var index) = FindElement(indexP);
+        var index = FindElement(_vertices[indexP]);
+        var element = _interiorElements[index];
 
         // Replace ABC by ABP, ACP, BCP
         _interiorElements.RemoveAt(index);
@@ -106,14 +107,13 @@ internal class DelaunayNaive : IDelaunay
         }
     }
 
-    private (TriangleElement Element, int Index) FindElement(int indexP)
+    public int FindElement(Vertex2 point)
     {
-        Vertex2 point = _vertices[indexP];
         for (var i = 0; i < _interiorElements.Count; i++)
         {
             var element = _interiorElements[i];
             if (Triangle.Contains(point, _vertices[element.I], _vertices[element.J], _vertices[element.K]))
-                return (element, i);
+                return i;
         }
         throw new Exception($"Point {point} not in elements.");
     }
@@ -155,34 +155,6 @@ internal class DelaunayNaive : IDelaunay
     private void Cleanup()
     {
         _boundaryElements.Clear();
-        for (var i = _interiorElements.Count - 1; i >= 0; i--)
-        {
-            var element = _interiorElements[i];
-            if (element.I < 3)
-            {
-                if (element is { J: >= 3, K: >= 3 })
-                {
-                    _boundaryElements.Add(new LineElement(element.J - 3, element.K - 3));
-                }
-                _interiorElements.RemoveAt(i);
-            }
-            else if (element.J < 3)
-            {
-                if (element.K >= 3)
-                {
-                    _boundaryElements.Add(new LineElement(element.K - 3, element.I - 3));
-                }
-                _interiorElements.RemoveAt(i);
-            }
-            else if (element.K < 3)
-            {
-                _boundaryElements.Add(new LineElement(element.I - 3, element.J - 3));
-                _interiorElements.RemoveAt(i);
-            }
-            else
-            {
-                _interiorElements[i] = new TriangleElement(element.I - 3, element.J - 3, element.K - 3);
-            }
-        }
+        Delaunay.Cleanup(_interiorElements, _boundaryElements);
     }
 }

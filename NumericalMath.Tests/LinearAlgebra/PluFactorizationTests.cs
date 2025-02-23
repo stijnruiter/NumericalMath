@@ -5,6 +5,7 @@ using System;
 using NumericalMath.LinearAlgebra.Structures;
 using NumericalMath.LinearAlgebra;
 using NumericalMath.Comparers;
+using NumericalMath.Exceptions;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 
@@ -157,10 +158,22 @@ public class PluFactorizationTests
     }
 
     [TestCaseSource(nameof(LinearSystemSets))]
-    public void SolveMatrixVectorUsingLUDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
+    public void SolveMatrixVectorUsingLuDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
-        ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPLU(A, b, 1e-5f);
+        ColumnVector<float> x2 = PluFactorizationOperations.SolveUsingPlu(A, b, 1e-5f);
         Assert.That(x2, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+    }
+
+    [Test]
+    public void SolveNonInvertibleMatrix()
+    {
+        Matrix<float> mat =
+        [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9]
+        ];
+        Assert.That(() => mat.Inverse(), Throws.Exception.TypeOf<DegenerateMatrixException>());
     }
 
     public static IEnumerable<TestCaseData> InverseMatricesSets
@@ -204,14 +217,14 @@ public class PluFactorizationTests
     [TestCaseSource(nameof(InverseMatricesSets))]
     public void InverseMatrixUsingLuDecomp(Matrix<float> A, Matrix<float> invA)
     {
-        Assert.That(PluFactorizationOperations.SolveUsingPLU(A, Matrix<float>.Identity(A.RowCount), Constants.DefaultFloatTolerance), Is.EqualTo(invA)
+        Assert.That(PluFactorizationOperations.SolveUsingPlu(A, Matrix<float>.Identity(A.RowCount), Constants.DefaultFloatTolerance), Is.EqualTo(invA)
             .Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
     }
 
     [TestCaseSource(nameof(LinearSystemSets))]
     public void SolveMatrixMatrixUsingLuDecomp(Matrix<float> A, ColumnVector<float> b, ColumnVector<float> result)
     {
-        Assert.That(PluFactorizationOperations.SolveUsingPLU(A, A, Constants.DefaultFloatTolerance), Is.EqualTo(Matrix<float>.Identity(A.RowCount))
+        Assert.That(PluFactorizationOperations.SolveUsingPlu(A, A, Constants.DefaultFloatTolerance), Is.EqualTo(Matrix<float>.Identity(A.RowCount))
             .Using<Matrix<float>>((a, b) => a.ApproxEquals(b)));
     }
 
@@ -225,7 +238,7 @@ public class PluFactorizationTests
         Matrix<float> A = GenerateMatrix(n, n, randomizer.NextFloat);
         ColumnVector<float> b = GenerateColumnVector(n, randomizer.NextFloat);
 
-        ColumnVector<float> x = PluFactorizationOperations.SolveUsingPLU(A, b, Constants.DefaultFloatTolerance);
+        ColumnVector<float> x = PluFactorizationOperations.SolveUsingPlu(A, b, Constants.DefaultFloatTolerance);
 
         Assert.That(x.RowCount, Is.EqualTo(n));
         Assert.That(A * x, Is.EqualTo(b).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
@@ -242,7 +255,7 @@ public class PluFactorizationTests
         Matrix<float> A = GenerateMatrix(n, n, randomizer.NextFloat);
         Matrix<float> B = GenerateMatrix(n, m, randomizer.NextFloat);
 
-        Matrix<float> X = PluFactorizationOperations.SolveUsingPLU(A, B, Constants.DefaultFloatTolerance);
+        Matrix<float> X = PluFactorizationOperations.SolveUsingPlu(A, B, Constants.DefaultFloatTolerance);
 
         Assert.That((X.RowCount, X.ColumnCount), Is.EqualTo((n, m)));
         Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 1e-4f)));

@@ -20,6 +20,7 @@ public class SimplexElementsTests
         Assert.That(element.J, Is.EqualTo(6));
 
         Assert.That(Unsafe.SizeOf<LineElement>(), Is.EqualTo(8));
+        Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}"));
     }
 
     [Test]
@@ -36,6 +37,7 @@ public class SimplexElementsTests
         Assert.That(element.K, Is.EqualTo(7));
 
         Assert.That(Unsafe.SizeOf<TriangleElement>(), Is.EqualTo(12));
+        Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}, {element.K}"));
     }
 
     [Test]
@@ -54,6 +56,7 @@ public class SimplexElementsTests
         Assert.That(element.L, Is.EqualTo(8));
 
         Assert.That(Unsafe.SizeOf<TetrahedronElement>(), Is.EqualTo(16));
+        Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}, {element.K}, {element.L}"));
     }
 
     [Test]
@@ -68,6 +71,7 @@ public class SimplexElementsTests
         Assert.That(vertex2.Y, Is.EqualTo(2));
 
         Assert.That(Unsafe.SizeOf<Vertex2>(), Is.EqualTo(8));
+        Assert.That(vertex2.ToString(), Does.Contain($"{1f}, {2f}"));
     }
 
     [Test]
@@ -84,6 +88,7 @@ public class SimplexElementsTests
         Assert.That(vertex3.Z, Is.EqualTo(3));
 
         Assert.That(Unsafe.SizeOf<Vertex3>(), Is.EqualTo(12));
+        Assert.That(vertex3.ToString(), Does.Contain($"{1f}, {2f}, {3f}"));
     }
 
     [Test]

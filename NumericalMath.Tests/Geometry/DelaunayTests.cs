@@ -2,6 +2,7 @@
 using NumericalMath.Geometry;
 using NumericalMath.Geometry.Structures;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace NumericalMath.Tests.Geometry;
 
@@ -128,14 +129,12 @@ public class DelaunayTests<T> where T : IDelaunay
         ];
 
         yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetName("Triangulation with 25 vertices");
-
-
     }
 
     [TestCaseSource(nameof(DelaunayData))]
     public void DelaunayTest(Vertex2[] input, TriangleElement[] expectedInterior, LineElement[] expectedBoundary)
     {
-        var output = T.CreateTriangulation(input);
+        var output = T.CreateTriangulation(input).ToMesh();
         Assert.That(output.Interior, Is.EquivalentTo(expectedInterior)
             .Using<TriangleElement>(CyclicalIdentical));
 
@@ -143,6 +142,18 @@ public class DelaunayTests<T> where T : IDelaunay
             .Using<LineElement>(CyclicalIdentical));
     }
 
+    [Test]
+    public void FindIndex()
+    {
+        var vertices = new Vertex2[] { new(0, 0), new(1, 0), new(0, 2) };
+        var delaunay = T.CreateTriangulation(vertices);
+        Assert.That(delaunay.FindElement(new Vertex2(0, 0)), Is.GreaterThanOrEqualTo(0));
+        Assert.That(delaunay.FindElement(new Vertex2(1, 0)), Is.GreaterThanOrEqualTo(0));
+        Assert.That(delaunay.FindElement(new Vertex2(0, 1)), Is.GreaterThanOrEqualTo(0));
+
+        Assert.That(() => delaunay.FindElement(new Vertex2(1e10f, 1e10f)), Throws.Exception);
+    }
+    
     private static bool CyclicalIdentical(TriangleElement element1, TriangleElement element2)
     {
         return (element1.I == element2.I && element1.J == element2.J && element1.K == element2.K) ||

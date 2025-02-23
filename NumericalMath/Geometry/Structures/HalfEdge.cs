@@ -15,6 +15,10 @@ public record struct HalfEdge
     public int TwinEdge = -1;
     public int ElementIndex = -1;
 
+    public HalfEdge()
+    {
+    }
+
     public HalfEdge(int v1, int v2, int prevEdge, int nextEdge, int twinEdge, int elementIndex)
     {
         V1 = v1;
@@ -26,13 +30,15 @@ public record struct HalfEdge
     }
 
     public override string ToString() =>
-        $"Face {ElementIndex}: prev(e): {PrevEdge}, next(e): {NextEdge}, twin(e): {TwinEdge}. ({V1},{V2})";
+        $"Face {ElementIndex}: prev(e): {PrevEdge}, next(e): {NextEdge}, twin(e): {TwinEdge}. ({V1}, {V2})";
 }
 
 public class HalfEdgeElement : IEnumerable<HalfEdge>
 {
     private readonly IReadOnlyList<HalfEdge> _edges;
+    
     private readonly int _firstFirstEdgeIndex;
+    
     public HalfEdgeElement(IReadOnlyList<HalfEdge> halfEdges, int firstEdgeIndex)
     {
         if (firstEdgeIndex < 0 || firstEdgeIndex >= halfEdges.Count)

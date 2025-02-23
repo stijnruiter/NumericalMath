@@ -78,13 +78,13 @@ public class MatrixOptimization<T> where T : struct, INumber<T>
     public MathNet.Numerics.LinearAlgebra.Matrix<float> MathNetAddition() => mLeft + mRight;
 
     [Benchmark]
-    public Matrix<T> SolveMatrix() => PluFactorizationOperations.SolveUsingPLU(left, right, T.Zero);
+    public Matrix<T> SolveMatrix() => PluFactorizationOperations.SolveUsingPlu(left, right, T.Zero);
 
     [Benchmark]
     public MathNet.Numerics.LinearAlgebra.Matrix<float> MathNetSolveMatrix() => mLeft.Solve(mRight);
 
     [Benchmark]
-    public ColumnVector<T> SolveVector() => PluFactorizationOperations.SolveUsingPLU(left, rightVec, T.Zero);
+    public ColumnVector<T> SolveVector() => PluFactorizationOperations.SolveUsingPlu(left, rightVec, T.Zero);
 
     [Benchmark]
     public MathNet.Numerics.LinearAlgebra.Vector<float> MathNetSolveVector() => mLeft.Solve(mRightVec);

@@ -256,13 +256,10 @@ public static class PluFactorizationOperations
         }
     }
 
-    public static ColumnVector<T> SolveUsingPLU<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : struct, INumber<T>
+    public static ColumnVector<T> SolveUsingPlu<T>(Matrix<T> A, ColumnVector<T> b, T tolerance) where T : struct, INumber<T>
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
-
-        if (T.Abs(lu.DiagonalProduct()) <= tolerance)
-            throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
         ColumnVector<T> Pb = new ColumnVector<T>(pivots.Length);
@@ -280,13 +277,10 @@ public static class PluFactorizationOperations
         return Pb;
     }
 
-    public static Matrix<T> SolveUsingPLU<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : struct, INumber<T>
+    public static Matrix<T> SolveUsingPlu<T>(Matrix<T> A, Matrix<T> B, T tolerance) where T : struct, INumber<T>
     {
         // LU decomposition: P A = L U
         (Matrix<T> lu, int[] pivots, int perm) = PluFactorization(A, tolerance); // L + U - I
-
-        if (T.Abs(lu.DiagonalProduct()) <= tolerance)
-            throw new NotInvertibleException(NonInvertibleReason.Singular);
 
         // Ax = b <=> PAx = Pb = LUx
         Matrix<T> Pb = new Matrix<T>(new ColumnMajorMatrixStorage<T>(B.RowCount, B.ColumnCount));

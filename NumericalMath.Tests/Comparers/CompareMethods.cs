@@ -26,7 +26,6 @@ public static class CompareMethods
                 if (T.Abs(left[i, j] - right[i, j]) > tolerance)
                     return false;
         return true;
-        //return SequenceApproxEqual(left.Span, right.Span, tolerance);
     }
 
     public static bool ApproxEquals(this IRectanglarMatrix<float> left, IRectanglarMatrix<float> right, float tolerance = Constants.DefaultFloatTolerance) => left.ApproxEquals<float>(right, tolerance);

@@ -130,7 +130,7 @@ public class HalfEdgeTriangulation(int triangleCount)
     
     public HalfEdgeElement GetElement(int elementIndex) => new(_edges, _elements[elementIndex]);
 
-    public IEnumerable<HalfEdgeElement> GetElements()
+    public IEnumerable<HalfEdgeElement> GetAllElements()
     {
         for (int i = 0; i < ElementCount; i++)
         {
@@ -151,10 +151,9 @@ public class HalfEdgeTriangulation(int triangleCount)
         var elements = new List<TriangleElement>();
         var boundary = new List<LineElement>();
 
-        // foreach (var element in GetElements())
-        for(var i = 0; i < ElementCount; i++)
+        foreach (var element in GetAllElements())
         {
-            var edges = GetElement(i).ToArray();
+            var edges = element.ToArray();
             Debug.Assert(edges.Length == 3);
             
             elements.Add(new TriangleElement(edges[0].V1, edges[1].V1, edges[2].V1));
@@ -179,10 +178,8 @@ public class HalfEdgeTriangulation(int triangleCount)
     
     private void AssertNewTrianglesFits(int newTriangles = 1)
     {
-        if (ElementCount + newTriangles > ElementCapacity)
-            throw new Exception($"Element capacity exceeded");
-        if (EdgeCount + newTriangles * 3 > EdgeCapacity)
-            throw new Exception($"Edge capacity exceeded");
+        if (ElementCount + newTriangles > ElementCapacity && EdgeCount + newTriangles * 3 > EdgeCapacity)
+            throw new Exception("Capacity exceeded");
     }
 
     private int GetEdgeIndex(int vStart, int vEnd)

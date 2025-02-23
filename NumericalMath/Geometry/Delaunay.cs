@@ -29,17 +29,18 @@ public class Delaunay : IDelaunay
         }
     }
 
-    public static (List<TriangleElement> Interior, List<LineElement> Boundary) CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
     {
-        var delaunay = new Delaunay(vertices);
-        var mesh = delaunay._triangulation.ToMesh();
+        var mesh = _triangulation.ToMesh();
         Cleanup(mesh.Interior, mesh.Boundary);
         return mesh;
     }
 
+    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices) => new Delaunay(vertices);
+
     private void InsertPoint(int indexP)
     {
-        var elementIndex = FindElement(indexP);
+        var elementIndex = FindElement(_vertices[indexP]);
         var edges = _triangulation.RefineTriangle(elementIndex, indexP);
         Debug.Assert(edges.Length == 3);
         FlipTest(edges[0]);
@@ -47,9 +48,8 @@ public class Delaunay : IDelaunay
         FlipTest(edges[2]);
     }
 
-    private int FindElement(int indexP)
+    public int FindElement(Vertex2 point)
     {
-        var point = _vertices[indexP];
         for (var i = 0; i < _triangulation.ElementCount; i++)
         {
             var indices = _triangulation.GetTriangleVertices(i);
@@ -57,7 +57,7 @@ public class Delaunay : IDelaunay
                 return i;
         }
         
-        throw new Exception($"Point {point} at index {indexP} not found");
+        throw new Exception($"Point {point} not found");
     }
 
     private void FlipTest(int edgeIndex)
@@ -97,7 +97,7 @@ public class Delaunay : IDelaunay
             - Matrix<float>.Determinant(b.X, b.Y, bLengthSquared, c.X, c.Y, cLengthSquared, d.X, d.Y, dLengthSquared);
     }
     
-    private static void Cleanup(List<TriangleElement> interior, List<LineElement> boundary)
+    internal static void Cleanup(List<TriangleElement> interior, List<LineElement> boundary)
     {
         boundary.Clear();
         for (var i = interior.Count - 1; i >= 0; i--)

@@ -49,12 +49,12 @@ public class DelaunaySubroutines
     [Benchmark(Baseline = true)]
     public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayDefault()
     {
-        return DelaunayNaive.CreateTriangulation(_vertices);
+        return DelaunayNaive.CreateTriangulation(_vertices).ToMesh();
     }
 
     [Benchmark]
     public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayOptimized()
     {
-        return Delaunay.CreateTriangulation(_vertices);
+        return Delaunay.CreateTriangulation(_vertices).ToMesh();
     }
 }
