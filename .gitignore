@@ -3,6 +3,8 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+*.user
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -24,6 +26,8 @@ bld/
 .vs/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
+# JetBrains Rider directory
+.idea/
 
 # CodeCoverage results
 TestResults*/

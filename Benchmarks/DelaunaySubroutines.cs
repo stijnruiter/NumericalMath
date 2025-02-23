@@ -14,16 +14,16 @@ namespace Benchmarks;
   *  DefaultJob : .NET 8.0.12 (8.0.1224.60305), X64 RyuJIT AVX2
   *
   *
-  *| Method            | Size | Mean      | Error    | StdDev   | Ratio | RatioSD | Gen0     | Allocated  | Alloc Ratio |
-  *|------------------ |----- |----------:|---------:|---------:|------:|--------:|---------:|-----------:|------------:|
-  *| DelaunayDefault   | 10   |  42.78 us | 0.782 us | 0.731 us |  1.00 |    0.02 |  25.2075 |  103.07 KB |        1.00 |
-  *| DelaunayOptimized | 10   |  12.91 us | 0.248 us | 0.296 us |  0.30 |    0.01 |   9.3231 |   38.08 KB |        0.37 |
-  *|                   |      |           |          |          |       |         |          |            |             |
-  *| DelaunayDefault   | 25   | 139.54 us | 1.838 us | 1.719 us |  1.00 |    0.02 |  90.3320 |  369.82 KB |        1.00 |
-  *| DelaunayOptimized | 25   |  56.87 us | 0.905 us | 0.889 us |  0.41 |    0.01 |  43.7012 |  178.66 KB |        0.48 |
-  *|                   |      |           |          |          |       |         |          |            |             |
-  *| DelaunayDefault   | 50   | 392.30 us | 7.442 us | 7.309 us |  1.00 |    0.03 | 268.5547 | 1098.42 KB |        1.00 |
-  *| DelaunayOptimized | 50   | 205.22 us | 2.219 us | 1.853 us |  0.52 |    0.01 | 167.2363 |  683.38 KB |        0.62 |
+  *| Method            | Size | Mean       | Error     | StdDev     | Ratio | RatioSD | Gen0     | Gen1   | Allocated  | Alloc Ratio |
+  *|------------------ |----- |-----------:|----------:|-----------:|------:|--------:|---------:|-------:|-----------:|------------:|
+  *| DelaunayDefault   | 10   |  49.643 us | 0.9842 us |  1.0939 us |  1.00 |    0.03 |  25.2075 |      - |  103.07 KB |        1.00 |
+  *| DelaunayOptimized | 10   |   4.938 us | 0.0948 us |  0.1297 us |  0.10 |    0.00 |   2.8915 |      - |   11.81 KB |        0.11 |
+  *|                   |      |            |           |            |       |         |          |        |            |             |
+  *| DelaunayDefault   | 25   | 163.086 us | 1.5648 us |  1.4637 us |  1.00 |    0.01 |  90.3320 |      - |  369.82 KB |        1.00 |
+  *| DelaunayOptimized | 25   |  12.624 us | 0.1937 us |  0.1812 us |  0.08 |    0.00 |   6.6528 |      - |   27.23 KB |        0.07 |
+  *|                   |      |            |           |            |       |         |          |        |            |             |
+  *| DelaunayDefault   | 50   | 459.270 us | 9.0009 us | 15.2843 us |  1.00 |    0.05 | 268.5547 |      - | 1098.42 KB |        1.00 |
+  *| DelaunayOptimized | 50   |  27.410 us | 0.4501 us |  0.6597 us |  0.06 |    0.00 |  13.0310 | 0.0305 |   53.32 KB |        0.05 |
   *
   *
   *| Method                 | Mean        | Error     | StdDev    | Gen0   | Allocated |
