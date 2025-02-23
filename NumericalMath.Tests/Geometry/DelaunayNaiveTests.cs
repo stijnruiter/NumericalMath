@@ -1,23 +1,16 @@
-﻿using NumericalMath.Geometry;
+﻿using System;
+using NumericalMath.Geometry;
 using NumericalMath.Geometry.Structures;
 using System.Collections.Generic;
 
 namespace NumericalMath.Tests.Geometry;
 
 [TestFixture(typeof(Delaunay))]
-[TestFixture(typeof(DelaunayOpt))]
-public class DelaunayTests<T> where T : DelaunayBase, new()
+[TestFixture(typeof(DelaunayNaive))]
+public class DelaunayTests<T> where T : IDelaunay
 {
-    private DelaunayBase _delaunay;
-
-    [SetUp]
-    public void InitDelaunay()
-    {
-        _delaunay = new T();
-    }
-
-    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 3f, 3f, ExpectedResult = -12f)] // Outside circle
-    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 1f, 0.5f, ExpectedResult = 0.25f)] // Inside circle
+    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 3f, 3f, ExpectedResult = -12f, TestName = "Outside circle")] // Outside circle
+    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 1f, 0.5f, ExpectedResult = 0.25f, TestName = "Inside cricle")] // Inside circle
     public float InCircleDeterminant(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy)
     {
         var a = new Vertex2(ax, ay);
@@ -25,10 +18,10 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
         var c = new Vertex2(cx, cy);
         var d = new Vertex2(dx, dy);
 
-        return _delaunay.InCircleDet(a, b, c, d);
+        return T.InCircleDeterminant(a, b, c, d);
     }
 
-    public static IEnumerable<TestCaseData> DelaunayData()
+    private static IEnumerable<TestCaseData> DelaunayData()
     {
         var input = new Vertex2[] {
             new(0.13375837f, -0.20463276f),
@@ -51,7 +44,7 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
             new(2, 4),
             new(4, 1),
         };
-        yield return new TestCaseData(input, expectedInterior, expectedBoundary);
+        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetName("Triangulation with 5 vertices");
 
         input = [
             new (0.13375837f, -0.20463276f),
@@ -134,7 +127,7 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
             new (22, 15),
         ];
 
-        yield return new TestCaseData(input, expectedInterior, expectedBoundary);
+        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetName("Triangulation with 25 vertices");
 
 
     }
@@ -142,29 +135,22 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
     [TestCaseSource(nameof(DelaunayData))]
     public void DelaunayTest(Vertex2[] input, TriangleElement[] expectedInterior, LineElement[] expectedBoundary)
     {
-
-        var output = _delaunay.CreateTriangulation(input);
+        var output = T.CreateTriangulation(input);
         Assert.That(output.Interior, Is.EquivalentTo(expectedInterior)
             .Using<TriangleElement>(CyclicalIdentical));
 
         Assert.That(output.Boundary, Is.EquivalentTo(expectedBoundary)
             .Using<LineElement>(CyclicalIdentical));
-
-
     }
 
-    private bool CyclicalIdentical(TriangleElement element1, TriangleElement element2)
+    private static bool CyclicalIdentical(TriangleElement element1, TriangleElement element2)
     {
-        if (element1.I == element2.I && element1.J == element2.J && element1.K == element2.K)
-            return true;
-        if (element1.I == element2.J && element1.J == element2.K && element1.K == element2.I)
-            return true;
-        if (element1.I == element2.K && element1.J == element2.I && element1.K == element2.J)
-            return true;
-        return false;
+        return (element1.I == element2.I && element1.J == element2.J && element1.K == element2.K) ||
+               (element1.I == element2.J && element1.J == element2.K && element1.K == element2.I) ||
+               (element1.I == element2.K && element1.J == element2.I && element1.K == element2.J);
     }
 
-    private bool CyclicalIdentical(LineElement element1, LineElement element2)
+    private static bool CyclicalIdentical(LineElement element1, LineElement element2)
     {
         if (element1.I == element2.I && element1.J == element2.J)
             return true;
@@ -172,5 +158,4 @@ public class DelaunayTests<T> where T : DelaunayBase, new()
             return true;
         return false;
     }
-
 }

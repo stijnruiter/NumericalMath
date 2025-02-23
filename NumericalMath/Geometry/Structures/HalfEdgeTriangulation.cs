@@ -146,7 +146,7 @@ public class HalfEdgeTriangulation(int triangleCount)
         }
     }
     
-    public (List<TriangleElement>, List<LineElement>) ToMesh()
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
     {
         var elements = new List<TriangleElement>();
         var boundary = new List<LineElement>();

@@ -25,41 +25,11 @@ namespace Benchmarks;
   *| DelaunayDefault   | 50   | 459.270 us | 9.0009 us | 15.2843 us |  1.00 |    0.05 | 268.5547 |      - | 1098.42 KB |        1.00 |
   *| DelaunayOptimized | 50   |  27.410 us | 0.4501 us |  0.6597 us |  0.06 |    0.00 |  13.0310 | 0.0305 |   53.32 KB |        0.05 |
   *
-  *
-  *| Method                 | Mean        | Error     | StdDev    | Gen0   | Allocated |
-  *|----------------------- |------------:|----------:|----------:|-------:|----------:|
-  *| InCircleDeterminant    | 1,100.07 ns | 21.989 ns | 38.512 ns | 0.5474 |    2296 B |
-  *| InCircleDeterminantOpt |    40.49 ns |  0.444 ns |  0.415 ns |      - |         - |
   **/
 
 [MemoryDiagnoser]
 public class DelaunaySubroutines
 {
-
-    //[Benchmark]
-    //public void InCircleDeterminant()
-    //{
-    //    var v1 = new Vertex2(0, 0);
-    //    var v2 = new Vertex2(1, 0);
-    //    var v3 = new Vertex2(0, 1);
-    //    var v4 = new Vertex2(1, 2);
-    //    var v5 = new Vertex2(0.5f, 0.5f);
-    //    float v = _delaunayDefault.InCircleDet(v1, v2, v3, v4);
-    //    v = _delaunayDefault.InCircleDet(v1, v2, v3, v5);
-    //}
-
-    //[Benchmark]
-    //public void InCircleDeterminantOpt()
-    //{
-    //    var v1 = new Vertex2(0, 0);
-    //    var v2 = new Vertex2(1, 0);
-    //    var v3 = new Vertex2(0, 1);
-    //    var v4 = new Vertex2(1, 2);
-    //    var v5 = new Vertex2(0.5f, 0.5f);
-    //    float v = _delaunayOpt.InCircleDet(v1, v2, v3, v4);
-    //    v = _delaunayOpt.InCircleDet(v1, v2, v3, v5);
-    //}
-
     [Params(10, 25, 50)]
     public int Size { get; set; }
 
@@ -76,18 +46,15 @@ public class DelaunaySubroutines
         }
     }
 
-    private readonly DelaunayBase _delaunayDefault = new Delaunay();
-    private readonly DelaunayBase _delaunayOpt = new DelaunayOpt();
-
     [Benchmark(Baseline = true)]
     public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayDefault()
     {
-        return _delaunayDefault.CreateTriangulation(_vertices);
+        return DelaunayNaive.CreateTriangulation(_vertices);
     }
 
     [Benchmark]
     public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayOptimized()
     {
-        return _delaunayOpt.CreateTriangulation(_vertices);
+        return Delaunay.CreateTriangulation(_vertices);
     }
 }
