@@ -2,10 +2,12 @@
 using System.Linq;
 using NUnit.Framework.Internal;
 using System;
+using System.Collections;
 using NumericalMath.LinearAlgebra.Structures;
 using NumericalMath.LinearAlgebra;
 using NumericalMath.Comparers;
 using NumericalMath.Exceptions;
+using NumericalMath.LinearAlgebra.Structures.MatrixStorage;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 
@@ -260,6 +262,61 @@ public class PluFactorizationTests
         Assert.That((X.RowCount, X.ColumnCount), Is.EqualTo((n, m)));
         Assert.That(A * X, Is.EqualTo(B).Using<Matrix<float>>((a, b) => a.ApproxEquals(b, 1e-4f)));
     }
+
+    private static IEnumerable<TestCaseData> ForwardSubstitutionVectorSets()
+    {
+        yield return new TestCaseData((Matrix<int>)[[1, 0], [2, 1]], (ColumnVector<int>)[1, 5])
+            .Returns((ColumnVector<int>)[1, 3]);
+        
+        yield return new TestCaseData((Matrix<int>)[[1, 0, 0, 0], [2, 1, 0, 0], [3, 4, 1, 0], [1, 2, 3, 1]], (ColumnVector<int>)[1, 5, 3, 4])
+            .Returns((ColumnVector<int>)[1, 3, -12, 33]);
+    }
+    
+    private static IEnumerable<TestCaseData> ForwardSubstitutionMatrixSets()
+    {
+        yield return new TestCaseData((Matrix<int>)[[1, 0], [2, 1]], (Matrix<int>)[[1, 2],[5,10]])
+            .Returns((Matrix<int>)[[1,2], [3,6]]);
+        
+        yield return new TestCaseData((Matrix<int>)[[1, 0, 0, 0], [2, 1, 0, 0], [3, 4, 1, 0], [1, 2, 3, 1]], 
+                (Matrix<int>)[[1,2,4,8], [5,10,20,40], [3,6,12,24], [4,8,16,32]])
+            .Returns((Matrix<int>)[[1,2,4,8], [3,6,12,24], [-12,-24,-48,-96], [33,66,132,264]]);
+    }
+    
+    private static IEnumerable<TestCaseData> BackwardSubstitutionVectorSets()
+    {
+        yield return new TestCaseData((Matrix<int>)[[3, 4], [0, 2]], (ColumnVector<int>)[3, 6])
+            .Returns((ColumnVector<int>)[-3, 3]);
+        
+        yield return new TestCaseData((Matrix<int>)[[3, 4, 5, 6], [0, 2, 4, 2], [0, 0, 6, 5], [0, 0, 0, 2]], (ColumnVector<int>)[3, 6, 3, 6])
+            .Returns((ColumnVector<int>)[-7,4, -2, 3]);
+    }
+    
+    private static IEnumerable<TestCaseData> BackwardSubstitutionMatrixSets()
+    {
+        yield return new TestCaseData((Matrix<int>)[[3, 4], [0, 2]], (Matrix<int>)[[3, 6], [6, 12]])
+            .Returns((Matrix<int>)[[-3, -6], [3,6]]);
+        
+        yield return new TestCaseData((Matrix<int>)[[3, 4, 5, 6], [0, 2, 4, 2], [0, 0, 6, 5], [0, 0, 0, 2]], 
+                (Matrix<int>)[[3, 6, 12], [6, 12, 24], [3, 6, 12], [6, 12, 24]])
+            .Returns((Matrix<int>)[[-7, -14, -28],[4, 8, 16], [-2, -4, -8], [3, 6, 12]]);
+    }
+
+    [TestCaseSource(nameof(ForwardSubstitutionVectorSets))]
+    public ColumnVector<int> ForwardSubstitutionVector(Matrix<int> lowerTriangle, ColumnVector<int> rhs) 
+        => PluFactorizationOperations.ForwardSubstitution(lowerTriangle, rhs);
+
+
+    [TestCaseSource(nameof(BackwardSubstitutionVectorSets))]
+    public ColumnVector<int> BackwardSubstitutionVector(Matrix<int> upper, ColumnVector<int> rhs) 
+        => PluFactorizationOperations.BackwardSubstitution(upper, rhs);
+
+    [TestCaseSource(nameof(ForwardSubstitutionMatrixSets))]
+    public Matrix<int> ForwardSubstitutionMatrix(Matrix<int> lowerTriangle, Matrix<int> rhs) 
+        => PluFactorizationOperations.ForwardSubstitution(lowerTriangle, rhs);
+
+    [TestCaseSource(nameof(BackwardSubstitutionMatrixSets))]
+    public Matrix<int> BackwardSubstitutionMatrix(Matrix<int> upper, Matrix<int> rhs) 
+        => PluFactorizationOperations.BackwardSubstitution(upper, rhs);
 
     private static Matrix<T> GenerateMatrix<T>(int n, int m, Func<T> randomGenerator) where T : struct, System.Numerics.INumber<T>
     {

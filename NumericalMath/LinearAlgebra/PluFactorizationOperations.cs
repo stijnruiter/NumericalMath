@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -78,14 +79,10 @@ public static class PluFactorizationOperations
 
             RowVector<T> pivotRow = LU.Storage.GetRowSlice(i, i + 1);
 
-            //Parallel.For(i + 1, LU.RowCount, j =>
-            for (int j = i + 1; j < LU.RowCount; j++)
+            for (var j = i + 1; j < LU.RowCount; j++)
             {
                 // Gaussian elimination step using pivot i
                 LU[j, i] /= LU[i, i];
-
-                //for (int k = i + 1; k < LU.ColumnCount; k++)
-                //    LU[j, k] -= LU[j, i] * LU[i, k];
 
                 RowVector<T> elemRow = LU.Storage.GetRowSlice(j, i + 1);
                 ScalarProductSubtract(elemRow, LU[j, i], pivotRow);
@@ -97,17 +94,8 @@ public static class PluFactorizationOperations
 
     private static void ScalarProductSubtract<T>(AbstractVector<T> destination, T scalar, in AbstractVector<T> source) where T : struct, INumber<T>
     {
-        if (destination.Stride == 1 && source.Stride == 1)
-        {
-            ScalarProductSubtract(destination.Span, scalar, source.Span);
-        }
-        else
-        {
-            for (int i = 0; i < destination.Length; i++)
-            {
-                destination[i] -= scalar * source[i];
-            }
-        }
+        Debug.Assert(destination.Stride == 1 && source.Stride == 1);
+        ScalarProductSubtract(destination.Span, scalar, source.Span);
     }
 
     private static void ScalarProductSubtract<T>(Span<T> destination, T scalar, ReadOnlySpan<T> source) where T : struct, INumberBase<T>
@@ -290,7 +278,6 @@ public static class PluFactorizationOperations
             {
                 Pb[i, j] = B[pivots[i], j];
             }
-            //B.Row(pivots[i]).ToArray().CopyTo(Pb.Row(i).Span);
         }
 
         // Solve LY=B
