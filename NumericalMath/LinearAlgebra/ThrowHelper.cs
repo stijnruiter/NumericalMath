@@ -41,7 +41,7 @@ internal static class ThrowHelper
             throw new IndexOutOfRangeException($"Index {i} cannot be negative");
 
         if (i >= vector.Length)
-            throw new IndexOutOfRangeException($"Index {i} is not in {vector.Length}-vectrox");
+            throw new IndexOutOfRangeException($"Index {i} is not in {vector.Length}-vector");
     }
 
     internal static void ThrowIfRowOutOfRange<T>(int i, in IMatrixStorage<T> matrix) where T : struct, INumber<T>

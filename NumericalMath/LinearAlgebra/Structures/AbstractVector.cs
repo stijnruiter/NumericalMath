@@ -57,7 +57,7 @@ public abstract class AbstractVector<T> : IRectanglarMatrix<T>, IEquatable<Abstr
         if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
             return false;
 
-        for (int i = 0; i < values.Length; i++)
+        for (int i = 0; i < RowCount * ColumnCount; i++)
         {
             if (this[i] != other[i])
                 return false;

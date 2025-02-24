@@ -85,6 +85,9 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
     public ColumnVector<T> GetColumnSlice(int j, int start, int length)
     {
         ThrowHelper.ThrowIfOutOfRange(0, j, this);
+        
+        if (start == RowCount)
+            return new ColumnVector<T>(0);
 
         return new ColumnVector<T>(_values.Slice(j * RowCount, RowCount).Slice(start, length), stride: 1);
     }
@@ -120,7 +123,7 @@ internal class ColumnMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct,
         if (start == ColumnCount || length == 0)
             return new RowVector<T>(0);
 
-        return new RowVector<T>(_values.Slice(start * RowCount + i, length * ColumnCount), stride: ColumnCount);
+        return new RowVector<T>(_values.Slice(start * RowCount + i, (length - 1) * ColumnCount + 1), stride: ColumnCount);
     }
 
     public void SetElement(int i, int j, T value)

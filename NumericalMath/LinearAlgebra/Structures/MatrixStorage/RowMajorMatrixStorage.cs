@@ -109,7 +109,7 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
         if (start == RowCount || length == 0)
             return new ColumnVector<T>(0);
 
-        return new ColumnVector<T>(_values.Slice(start * ColumnCount + j, length * ColumnCount), stride: ColumnCount);
+        return new ColumnVector<T>(_values.Slice(start * ColumnCount + j, (length-1) * ColumnCount + 1), stride: ColumnCount);
     }
 
     public T GetElement(int i, int j)
@@ -137,6 +137,9 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
     {
         ThrowHelper.ThrowIfRowOutOfRange(i, this);
 
+        if (start == ColumnCount || length == 0)
+            return new RowVector<T>(0);
+        
         return new RowVector<T>(_values.Slice(i * ColumnCount, ColumnCount).Slice(start, length), stride: 1);
     }
 

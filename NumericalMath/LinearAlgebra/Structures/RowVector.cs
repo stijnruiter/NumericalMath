@@ -87,6 +87,8 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs)
         => InternalArithmetics.DotProduct(lhs, rhs);
 
+    public static RowVector<T> Zero(int size) => new RowVector<T>(size);
+    
     public RowVector<T> Copy()
     {
         Memory<T> copy = new T[values.Length];

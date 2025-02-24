@@ -58,7 +58,7 @@ public class ArithmeticsMiscTests
             {36, 40, 44, 48, 45, 50, 55, 60, 54, 60, 66, 72}
         });
 
-        Assert.That((Matrix<int>)InternalArithmetics.TensorProduct(left, right), Is.EqualTo(expectedResultLeftRight));
+        Assert.That(Matrix<int>.TensorProduct(left, right), Is.EqualTo(expectedResultLeftRight));
     }
 
     [Test]

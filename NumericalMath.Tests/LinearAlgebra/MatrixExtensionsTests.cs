@@ -1,4 +1,6 @@
-﻿using NumericalMath.Comparers;
+﻿using System.Collections.Generic;
+using System.Linq;
+using NumericalMath.Comparers;
 using NumericalMath.LinearAlgebra.Structures;
 
 namespace NumericalMath.Tests.LinearAlgebra;
@@ -11,6 +13,20 @@ internal class MatrixExtensionsTests
     {
         ColumnVector<float> x = A.Solve(b);
         Assert.That(x, Is.EqualTo(result).Using<AbstractVector<float>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+
+        ColumnVector<double> results = ToDoubles(result);
+        ColumnVector<double> x2 = A.ToDoubles().Solve(ToDoubles(b));        
+        Assert.That(x2, Is.EqualTo(results).Using<AbstractVector<double>>((a, b) => a.ApproxEquals(b, 5e-5f)));
+    }
+
+    private ColumnVector<double> ToDoubles(ColumnVector<float> values)
+    {
+        ColumnVector<double> result = new ColumnVector<double>(values.RowCount);
+        for (int i = 0; i < values.RowCount; i++)
+        {
+            result[i] = values[i];
+        }
+        return result;
     }
 
     [TestCaseSource(typeof(PluFactorizationTests), nameof(PluFactorizationTests.InverseMatricesSets))]

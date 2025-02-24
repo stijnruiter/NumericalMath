@@ -1,6 +1,8 @@
 ﻿using NumericalMath.LinearAlgebra.Structures.MatrixStorage;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -87,8 +89,9 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public ColumnVector<T> Diagonal()
     {
-        T[] values = new T[RowCount];
-        for (int i = 0; i < RowCount; i++)
+        var minColRow = int.Min(RowCount, ColumnCount);
+        T[] values = new T[minColRow];
+        for (int i = 0; i < minColRow; i++)
         {
             values[i] = this[i, i];
         }
@@ -131,30 +134,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
 
     public static Matrix<T> Zero(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.Zero);
 
-    public static Matrix<T> One(int size) => One(size, size);
-
-    public static Matrix<T> One(int rowCount, int columnCount) => new Matrix<T>(rowCount, columnCount, T.One);
-
     public static Matrix<T> Identity(int size) => Matrix<T>.Diagonal(size, T.One);
-
-    public static Matrix<T> Tridiagonal(int size, T a_left, T a_center, T a_right)
-    {
-        Matrix<T> result = Matrix<T>.Zero(size);
-        for (int i = 0; i < size; i++)
-        {
-            if (i > 0)
-            {
-                result[i, i - 1] = a_left;
-            }
-            result[i, i] = a_center;
-            if (i < size - 1)
-            {
-                result[i, i + 1] = a_right;
-            }
-        }
-
-        return result;
-    }
 
     public static Matrix<T> Diagonal(int size, T diagonal)
     {

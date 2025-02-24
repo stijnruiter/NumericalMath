@@ -120,7 +120,7 @@ internal class InternalArithmetics
         }
         else
         {
-            for (int i = 0; i <= lhs.Length; i++)
+            for (int i = 0; i < lhs.Length; i++)
             {
                 result[i] = lhs[i] + rhs[i];
             }
@@ -138,11 +138,13 @@ internal class InternalArithmetics
         }
         else
         {
-            for (int i = 0; i <= lhs.RowCount; i++)
-                for (int j = 0; j <= lhs.ColumnCount; i++)
+            for (int i = 0; i < lhs.RowCount; i++)
+            {
+                for (int j = 0; j < lhs.ColumnCount; j++)
                 {
                     result[i, j] = lhs[i, j] + rhs[i, j];
                 }
+            }
         }
     }
 
@@ -157,7 +159,7 @@ internal class InternalArithmetics
         }
         else
         {
-            for (int i = 0; i <= lhs.Length; i++)
+            for (int i = 0; i < lhs.Length; i++)
             {
                 result[i] = lhs[i] - rhs[i];
             }
@@ -175,11 +177,13 @@ internal class InternalArithmetics
         }
         else
         {
-            for (int i = 0; i <= lhs.RowCount; i++)
-                for (int j = 0; j <= lhs.ColumnCount; i++)
+            for (int i = 0; i < lhs.RowCount; i++)
+            {
+                for (int j = 0; j < lhs.ColumnCount; j++)
                 {
                     result[i, j] = lhs[i, j] - rhs[i, j];
                 }
+            }
         }
     }
 
@@ -281,36 +285,5 @@ internal class InternalArithmetics
             }
         }
         return result;
-    }
-
-    internal static void ScalarProductSubtract<T>(AbstractVector<T> destination, T scalar, in AbstractVector<T> source) where T : struct, INumber<T>
-    {
-        if (destination.Stride == 1 && source.Stride == 1)
-        {
-            ScalarProductSubtract(destination.Span, scalar, source.Span);
-        }
-        else
-        {
-            for (int i = 0; i < destination.Length; i++)
-            {
-                destination[i] -= scalar * source[i];
-            }
-        }
-    }
-
-    private static void ScalarProductSubtract<T>(Span<T> destination, T scalar, ReadOnlySpan<T> source) where T : struct, INumberBase<T>
-    {
-        ReadOnlySpan<Vector<T>> sourceVec = MemoryMarshal.Cast<T, Vector<T>>(source);
-        Span<Vector<T>> destinationVec = MemoryMarshal.Cast<T, Vector<T>>(destination);
-        Vector<T> scalarVec = new Vector<T>(scalar);
-        for (int j = 0; j < sourceVec.Length; j++)
-        {
-            destinationVec[j] -= scalarVec * sourceVec[j];
-        }
-
-        for (int j = sourceVec.Length * Vector<T>.Count; j < destination.Length; j++)
-        {
-            destination[j] -= scalar * source[j];
-        }
     }
 }
