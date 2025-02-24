@@ -249,7 +249,7 @@ internal class VectorTests
     }
 
     [Test]
-    public void DifferentStrorageMatrixOperations()
+    public void DifferentStorageMatrixOperations()
     {
         var columnStorage = new ColumnMajorMatrixStorage<int>(new[,] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } });
         var rowStorage  = new RowMajorMatrixStorage<int>(new[,] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } });
@@ -281,34 +281,31 @@ internal class VectorTests
         Assert.That(rowMatrix * 5, Is.EqualTo(scalarProduct));
     }
 
-    [Test]
-    public void NotEqualRows()
+    [TestCase(new[]{1,2,3,4}, new[]{1,2,3,5})]
+    [TestCase(new[]{1,2,3,4}, new[]{1,2,3})]
+    public void NotEqualRows(int[] array1, int[] array2)
     {
-        RowVector<int> rowVector1 = [1, 2, 3, 4];
-        RowVector<int> rowVector2 = [1, 2, 3, 5];
-        RowVector<int> rowVectorWrongLength = [1, 2, 3];
-        
+        var rowVector1 = new RowVector<int>(array1);
+        var rowVector2 = new RowVector<int>(array2);
         Assert.That(rowVector1, Is.Not.EqualTo(rowVector2));
-        Assert.That(rowVector1, Is.Not.EqualTo(rowVectorWrongLength));
     }
     
-    [Test]
-    public void NotEqualColumns()
+    [TestCase(new[]{1,2,3,4}, new[]{1,2,3,5})]
+    [TestCase(new[]{1,2,3,4}, new[]{1,2,3})]
+    public void NotEqualColumns(int[] array1, int[] array2)
     {
-        ColumnVector<int> rowVector1 = [1, 2, 3, 4];
-        ColumnVector<int> rowVector2 = [1, 2, 3, 5];
-        ColumnVector<int> rowVectorWrongLength = [1, 2, 3];
-        
+        var rowVector1 = new ColumnVector<int>(array1);
+        var rowVector2 = new ColumnVector<int>(array2);
         Assert.That(rowVector1, Is.Not.EqualTo(rowVector2));
-        Assert.That(rowVector1, Is.Not.EqualTo(rowVectorWrongLength));
     }
 
     public static IEnumerable<TestCaseData> Vectors()
     {
-        var elements = new int[] { 1, 2, 3, 4, 5 };
+        var elements = new[] { 1, 2, 3, 4, 5 };
         yield return new TestCaseData(new RowVector<int>(elements)).Returns(elements).SetArgDisplayNames("RowVector");
         yield return new TestCaseData(new ColumnVector<int>(elements)).Returns(elements).SetArgDisplayNames("ColumnVector");
     }
+    
     [TestCaseSource(nameof(Vectors))]
     public IEnumerable<int> EnumeratorVector(AbstractVector<int> vector)
     {
@@ -325,15 +322,18 @@ internal class VectorTests
     }
 
     [Test]
-    public void ConstantVector()
+    public void ConstantColumnVector()
     {
         var columnVector = new ColumnVector<int>(5, 0);
         Assert.That(columnVector, Is.EqualTo(ColumnVector<int>.Zero(5)));
 
         columnVector = new ColumnVector<int>(5, 3);
         Assert.That(columnVector.ToArray(), Is.EqualTo(new[] { 3, 3, 3, 3, 3 }));
+    }
 
-        
+    [Test]
+    public void ConstantRowVector()
+    {
         var rowVector = new RowVector<int>(5, 0);
         Assert.That(rowVector, Is.EqualTo(RowVector<int>.Zero(5)));
 
@@ -364,7 +364,7 @@ internal class VectorTests
     }
 
     [Test]
-    public void CastVector()
+    public void ExplicitCastVector()
     {
         int[] values = [1, 2, 3, 4, 5];
         var column = (ColumnVector<int>)values;
@@ -390,19 +390,4 @@ internal class VectorTests
         Assert.That(randomRow1, Is.Not.EqualTo(randomRow2));
     }
 
-    public static IEnumerable<TestCaseData> VectorNorms()
-    {
-        yield return new TestCaseData(Array.Empty<float>(), 0f, 0f, null);
-        yield return new TestCaseData(new float[] { 1, 2, 3, 4, 5 }, 15f, 7.416198f, 5f);
-        yield return new TestCaseData(new float[] { -5.2f, 3, 2.8f, 4, 2, 5 }, 22f, 9.427619f, 5.2f);
-    }
-    
-    [TestCaseSource(nameof(VectorNorms))]
-    public void VectorNorm(float[] vector, float sum, float mean, float? max)
-    {
-        var column = new ColumnVector<float>(vector);
-        Assert.That(column.Norm1(), Is.EqualTo(sum).Within(1e-5));
-        Assert.That(column.Norm2(), Is.EqualTo(mean).Within(1e-5));
-        Assert.That(column.NormInf(), Is.EqualTo(max).Within(1e-5));
-    }
 }

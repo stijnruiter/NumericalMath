@@ -1,8 +1,6 @@
-﻿using System;
-using NumericalMath.Geometry;
+﻿using NumericalMath.Geometry;
 using NumericalMath.Geometry.Structures;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace NumericalMath.Tests.Geometry;
 
@@ -136,10 +134,10 @@ public class DelaunayTests<T> where T : IDelaunay
     {
         var output = T.CreateTriangulation(input).ToMesh();
         Assert.That(output.Interior, Is.EquivalentTo(expectedInterior)
-            .Using<TriangleElement>(CyclicalIdentical));
+            .Using<TriangleElement>(AreCyclicalIdentical));
 
         Assert.That(output.Boundary, Is.EquivalentTo(expectedBoundary)
-            .Using<LineElement>(CyclicalIdentical));
+            .Using<LineElement>(AreCyclicalIdentical));
     }
 
     [Test]
@@ -154,19 +152,16 @@ public class DelaunayTests<T> where T : IDelaunay
         Assert.That(() => delaunay.FindElement(new Vertex2(1e10f, 1e10f)), Throws.Exception);
     }
     
-    private static bool CyclicalIdentical(TriangleElement element1, TriangleElement element2)
+    private static bool AreCyclicalIdentical(TriangleElement element1, TriangleElement element2)
     {
         return (element1.I == element2.I && element1.J == element2.J && element1.K == element2.K) ||
                (element1.I == element2.J && element1.J == element2.K && element1.K == element2.I) ||
                (element1.I == element2.K && element1.J == element2.I && element1.K == element2.J);
     }
 
-    private static bool CyclicalIdentical(LineElement element1, LineElement element2)
+    private static bool AreCyclicalIdentical(LineElement element1, LineElement element2)
     {
-        if (element1.I == element2.I && element1.J == element2.J)
-            return true;
-        if (element1.I == element2.J && element1.J == element2.I)
-            return true;
-        return false;
+        return (element1.I == element2.I && element1.J == element2.J) ||
+               (element1.I == element2.J && element1.J == element2.I);
     }
 }

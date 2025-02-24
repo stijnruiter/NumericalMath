@@ -87,7 +87,7 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
     public static T operator *(RowVector<T> lhs, ColumnVector<T> rhs)
         => InternalArithmetics.DotProduct(lhs, rhs);
 
-    public static RowVector<T> Zero(int size) => new RowVector<T>(size);
+    public static RowVector<T> Zero(int size) => new(size);
     
     public RowVector<T> Copy()
     {
@@ -98,8 +98,8 @@ public class RowVector<T> : AbstractVector<T> where T : struct, INumber<T>
 
     public static RowVector<T> Random(int size)
     {
-        Random random = new Random();
-        RowVector<T> vector = new RowVector<T>(random.RandomNumbers<T>(size));
+        var random = new Random();
+        var vector = new RowVector<T>(random.RandomNumbers<T>(size));
         return vector;
     }
 }

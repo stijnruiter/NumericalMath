@@ -20,6 +20,7 @@ public class SimplexElementsTests
         Assert.That(element.J, Is.EqualTo(6));
 
         Assert.That(Unsafe.SizeOf<LineElement>(), Is.EqualTo(8));
+        // Check that ToString() at least displays the correct order of indices
         Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}"));
     }
 
@@ -37,6 +38,7 @@ public class SimplexElementsTests
         Assert.That(element.K, Is.EqualTo(7));
 
         Assert.That(Unsafe.SizeOf<TriangleElement>(), Is.EqualTo(12));
+        // Check that ToString() at least displays the correct order of indices
         Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}, {element.K}"));
     }
 
@@ -56,6 +58,7 @@ public class SimplexElementsTests
         Assert.That(element.L, Is.EqualTo(8));
 
         Assert.That(Unsafe.SizeOf<TetrahedronElement>(), Is.EqualTo(16));
+        // Check that ToString() at least displays the correct order of indices
         Assert.That(element.ToString(), Does.Contain($"{element.I}, {element.J}, {element.K}, {element.L}"));
     }
 
@@ -71,6 +74,7 @@ public class SimplexElementsTests
         Assert.That(vertex2.Y, Is.EqualTo(2));
 
         Assert.That(Unsafe.SizeOf<Vertex2>(), Is.EqualTo(8));
+        // Check that ToString() at least displays the correct order of indices
         Assert.That(vertex2.ToString(), Does.Contain($"{1f}, {2f}"));
     }
 
@@ -88,6 +92,7 @@ public class SimplexElementsTests
         Assert.That(vertex3.Z, Is.EqualTo(3));
 
         Assert.That(Unsafe.SizeOf<Vertex3>(), Is.EqualTo(12));
+        // Check that ToString() at least displays the correct order of indices
         Assert.That(vertex3.ToString(), Does.Contain($"{1f}, {2f}, {3f}"));
     }
 
@@ -146,6 +151,7 @@ public class SimplexElementsTests
 
         var vertices = x.Zip(y).Select(pair => new Vertex2(pair.First, pair.Second)).ToArray();
         var boundingBox = Rectangle.BoundingBox(vertices, dilate);
+        
         Assert.That(boundingBox.Left, Is.EqualTo(expectedRectangle.Left).Within(1e-5));
         Assert.That(boundingBox.Right, Is.EqualTo(expectedRectangle.Right).Within(1e-5));
         Assert.That(boundingBox.Bottom, Is.EqualTo(expectedRectangle.Bottom).Within(1e-5));
@@ -155,7 +161,7 @@ public class SimplexElementsTests
 
     private IEnumerable<float> GetFloats(int nPoints)
     {
-        for (int i = 0; i < nPoints; i++)
+        for (var i = 0; i < nPoints; i++)
         {
             yield return TestContext.CurrentContext.Random.NextFloat(-5f, 5f);
         }

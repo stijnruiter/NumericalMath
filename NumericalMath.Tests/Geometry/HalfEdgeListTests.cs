@@ -33,7 +33,7 @@ public class HalfEdgeTriangulationTests
     }
     
     [Test]
-    public void HalfEdgeDataStructureConstructoir()
+    public void HalfEdgeDataStructureConstructor()
     {
         var halfEdges = new HalfEdgeTriangulation(5);
         Assert.That(halfEdges.ElementCount, Is.EqualTo(0));
@@ -161,26 +161,25 @@ public class HalfEdgeTriangulationTests
         Assume.That(edges, Has.Length.EqualTo(6));
         Assume.That(triangulation.ElementCount, Is.EqualTo(2));
         Assume.That(edges, Is.EquivalentTo(expectedEdges1.Concat(expectedEdges2)));
-        var haflEdgeElement = new HalfEdgeElement(edges, 0);
-        using var enumerator = haflEdgeElement.GetEnumerator();
-        List<HalfEdge> edgesFromEnum = new();
+        
+        var halfEdgeElement = new HalfEdgeElement(edges, 0);
+        using var enumerator = halfEdgeElement.GetEnumerator();
+        
+        List<HalfEdge> edgesFromEnum = [];
         while (enumerator.MoveNext())
         {
             edgesFromEnum.Add(enumerator.Current);
         }
         Assert.That(edgesFromEnum, Is.EquivalentTo(expectedEdges1));
+        
+        // Reset should result in the same set of edges
         enumerator.Reset();
-        edgesFromEnum.Clear();
-        
+        List<HalfEdge> edgesFromEnum2 = [];
         while (enumerator.MoveNext())
         {
-            edgesFromEnum.Add(enumerator.Current);
+            edgesFromEnum2.Add(enumerator.Current);
         }
-        Assert.That(edgesFromEnum, Is.EquivalentTo(expectedEdges1));
-        
-
-
-
+        Assert.That(edgesFromEnum2, Is.EquivalentTo(expectedEdges1));
     }
 
     private static IEnumerable<TestCaseData> TwoElementTriangulation()
