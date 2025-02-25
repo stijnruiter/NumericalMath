@@ -63,7 +63,7 @@ public class RowMajorMatrixStorage<T> : IMatrixStorage<T> where T : struct, INum
 
     public RowMajorMatrixStorage(ReadOnlySpan<RowVector<T>> rows)
     {
-        if (rows.Length == 0)
+        if (rows.Length == 0 || rows[0].Length == 0)
         {
             RowCount = 0;
             ColumnCount = 0;
