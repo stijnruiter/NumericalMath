@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NumericalMath.Comparers;
-using NumericalMath.LinearAlgebra.Structures;
+﻿using NumericalMath.LinearAlgebra.Structures;
+using NumericalMath.Tests.ExtensionHelpers;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 

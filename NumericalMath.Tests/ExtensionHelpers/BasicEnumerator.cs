@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NumericalMath.Tests.Comparers;
+namespace NumericalMath.Tests.ExtensionHelpers;
 
 public static class EnumeratorExtensions
 {

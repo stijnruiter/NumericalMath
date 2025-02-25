@@ -2,12 +2,10 @@
 using System.Linq;
 using NUnit.Framework.Internal;
 using System;
-using System.Collections;
 using NumericalMath.LinearAlgebra.Structures;
 using NumericalMath.LinearAlgebra;
-using NumericalMath.Comparers;
 using NumericalMath.Exceptions;
-using NumericalMath.LinearAlgebra.Structures.MatrixStorage;
+using NumericalMath.Tests.ExtensionHelpers;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 

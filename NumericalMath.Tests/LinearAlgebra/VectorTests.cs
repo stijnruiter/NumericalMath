@@ -1,13 +1,10 @@
 ﻿using NumericalMath.Exceptions;
 using NumericalMath.LinearAlgebra.Structures;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using NumericalMath.Comparers;
 using NumericalMath.LinearAlgebra.Structures.MatrixStorage;
-using NumericalMath.Tests.Comparers;
+using NumericalMath.Tests.ExtensionHelpers;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 

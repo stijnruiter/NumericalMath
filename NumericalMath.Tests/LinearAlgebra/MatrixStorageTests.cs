@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NumericalMath.LinearAlgebra.Structures;
 using NumericalMath.LinearAlgebra.Structures.MatrixStorage;
-using NumericalMath.Tests.Comparers;
+using NumericalMath.Tests.ExtensionHelpers;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 
