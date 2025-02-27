@@ -1,6 +1,6 @@
 # Numerical Mathematics from scratch
 
-![UnitTests](https://github.com/stijnruiter/NumericalMath/actions/workflows/dotnet.yml/badge.svg)
+[![UnitTests](https://github.com/stijnruiter/NumericalMath/actions/workflows/dotnet.yml/badge.svg)](https://github.com/stijnruiter/NumericalMath/actions)
 
 This repository is my implementation of numerical analysis procedures purely written in C# using .NET Core 8. I intend to only use .NET Core as a dependency, and write all computational mathematics procedures from scratch. I will use benchmark tools for optimization purposes.
 
