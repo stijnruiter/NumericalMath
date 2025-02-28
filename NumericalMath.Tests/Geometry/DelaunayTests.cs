@@ -8,8 +8,10 @@ namespace NumericalMath.Tests.Geometry;
 [TestFixture(typeof(DelaunayNaive))]
 public class DelaunayTests<T> where T : IDelaunay
 {
-    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 3f, 3f, ExpectedResult = -12f, TestName = "Outside circle")] // Outside circle
-    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 1f, 0.5f, ExpectedResult = 0.25f, TestName = "Inside cricle")] // Inside circle
+    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 3f, 3f, ExpectedResult = -12f, // Outside circle
+        TestName = "InCircleDeterminant_When4thPointOutsideCircle_ShouldBeNegative")] 
+    [TestCase(0f, 0f, 1f, 0f, 0f, 1f, 1f, 0.5f, ExpectedResult = 0.25f, // Inside circle
+        TestName = "InCircleDeterminant_When4thPointInsideCircle_ShouldBePositive")] 
     public float InCircleDeterminant(float ax, float ay, float bx, float by, float cx, float cy, float dx, float dy)
     {
         var a = new Vertex2(ax, ay);
@@ -43,7 +45,7 @@ public class DelaunayTests<T> where T : IDelaunay
             new(2, 4),
             new(4, 1),
         };
-        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetName("Triangulation with 5 vertices");
+        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetArgDisplayNames("Triangulation with 5 vertices");
 
         input = [
             new (0.13375837f, -0.20463276f),
@@ -126,11 +128,11 @@ public class DelaunayTests<T> where T : IDelaunay
             new (22, 15),
         ];
 
-        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetName("Triangulation with 25 vertices");
+        yield return new TestCaseData(input, expectedInterior, expectedBoundary).SetArgDisplayNames("Triangulation with 25 vertices");
     }
 
     [TestCaseSource(nameof(DelaunayData))]
-    public void DelaunayTest(Vertex2[] input, TriangleElement[] expectedInterior, LineElement[] expectedBoundary)
+    public void CreateTriangulation_WhenVerticesAreGiven_ShouldComputeDelaunayTriangulation(Vertex2[] input, TriangleElement[] expectedInterior, LineElement[] expectedBoundary)
     {
         var output = T.CreateTriangulation(input).ToMesh();
         Assert.That(output.Interior, Is.EquivalentTo(expectedInterior)
@@ -141,7 +143,7 @@ public class DelaunayTests<T> where T : IDelaunay
     }
 
     [Test]
-    public void FindIndex()
+    public void FindElement_WhenVertexIsInTriangulation_ShouldReturnElementIndex()
     {
         var vertices = new Vertex2[] { new(0, 0), new(1, 0), new(0, 2) };
         var delaunay = T.CreateTriangulation(vertices);
