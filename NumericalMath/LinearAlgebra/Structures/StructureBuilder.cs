@@ -60,26 +60,21 @@ public class VectorEnumerator<T> : IEnumerator<T> where T : struct, INumber<T>
     }
 }
 
-public class MatrixEnumerator<T> : IEnumerator<RowVector<T>> where T : struct, INumber<T>
+public class MatrixEnumerator<T>(IMatrixStorage<T> matrix) : IEnumerator<RowVector<T>>
+    where T : struct, INumber<T>
 {
-    private int position;
-    private readonly Matrix<T> matrix;
-    public MatrixEnumerator(Matrix<T> matrix)
-    {
-        this.matrix = matrix;
-        position = -1;
-    }
+    private int _position = -1;
 
-    public RowVector<T> Current => matrix.Row(position);
+    public RowVector<T> Current => matrix.GetRow(_position);
 
-    object IEnumerator.Current => matrix.Row(position);
+    object IEnumerator.Current => matrix.GetRow(_position);
 
     public void Dispose() { }
 
     public bool MoveNext()
     {
-        position += 1;
-        if (position < matrix.RowCount)
+        _position += 1;
+        if (_position < matrix.RowCount)
         {
             return true;
         }
@@ -91,6 +86,6 @@ public class MatrixEnumerator<T> : IEnumerator<RowVector<T>> where T : struct, I
 
     public void Reset()
     {
-        position = -1;
+        _position = -1;
     }
 }

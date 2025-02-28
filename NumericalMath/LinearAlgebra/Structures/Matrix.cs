@@ -85,7 +85,7 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
         return stringBuilder.ToString();
     }
 
-    public Matrix<T> Copy() => new Matrix<T>(Storage.Copy());
+    public Matrix<T> Copy() => new(Storage.Copy());
 
     public ColumnVector<T> Diagonal()
     {
@@ -160,5 +160,5 @@ public partial class Matrix<T> : IRectanglarMatrix<T>, IEquatable<Matrix<T>> whe
     public static Matrix<T> TensorProduct(Matrix<T> lhs, Matrix<T> rhs) 
         => (Matrix<T>)InternalArithmetics.TensorProduct(lhs, rhs);
 
-    public IEnumerator<RowVector<T>> GetEnumerator() => new MatrixEnumerator<T>(this);
+    public IEnumerator<RowVector<T>> GetEnumerator() => new MatrixEnumerator<T>(Storage);
 }
