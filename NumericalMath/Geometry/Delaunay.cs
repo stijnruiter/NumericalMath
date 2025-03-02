@@ -8,25 +8,20 @@ namespace NumericalMath.Geometry;
 
 public class Delaunay : IDelaunay
 {
-    private readonly Vertex2[] _vertices;
+    private readonly List<Vertex2> _vertices;
     private readonly HalfEdgeTriangulation _triangulation;
 
-    private Delaunay(ReadOnlySpan<Vertex2> vertices)
+    private Delaunay(Triangle boundingTriangle, int nVertexCapacity)
     {
-        var containing = Triangle.ContainingTriangle(vertices, 1e5f);
-        _vertices = new Vertex2[vertices.Length + 3];
-        _vertices[0] = containing.V1;
-        _vertices[1] = containing.V2;
-        _vertices[2] = containing.V3;
-        vertices.CopyTo(_vertices.AsSpan()[3..]);
-
-        _triangulation = new HalfEdgeTriangulation(2 * _vertices.Length + 1);
-        _triangulation.AddTriangle(0, 1, 2);
-        
-        for (var i = 3; i < _vertices.Length; i++)
+        _vertices = new List<Vertex2>(nVertexCapacity + 3)
         {
-            InsertPoint(i);
-        }
+            boundingTriangle.V1,
+            boundingTriangle.V2,
+            boundingTriangle.V3,
+        };
+
+        _triangulation = new HalfEdgeTriangulation(2 * _vertices.Capacity + 1);
+        _triangulation.AddTriangle(0, 1, 2);
     }
 
     public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
@@ -36,11 +31,23 @@ public class Delaunay : IDelaunay
         return mesh;
     }
 
-    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices) => new Delaunay(vertices);
-
-    private void InsertPoint(int indexP)
+    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
     {
-        var elementIndex = FindElement(_vertices[indexP]);
+        var delaunay = new Delaunay(Triangle.ContainingTriangle(vertices, 1e5f), vertices.Length);
+        foreach (var vertex in vertices)
+        {
+            delaunay.InsertPoint(vertex);
+        }
+        
+        return delaunay;
+    }
+    
+
+    public void InsertPoint(Vertex2 point)
+    {
+        var indexP = _vertices.Count;
+        _vertices.Add(point);
+        var elementIndex = FindElement(point);
         var edges = _triangulation.RefineTriangle(elementIndex, indexP);
         Debug.Assert(edges.Length == 3);
         FlipTest(edges[0]);

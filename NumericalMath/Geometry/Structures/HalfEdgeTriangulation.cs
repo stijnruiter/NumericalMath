@@ -7,16 +7,16 @@ namespace NumericalMath.Geometry.Structures;
 
 public class HalfEdgeTriangulation(int triangleCount)
 {
-    private readonly int[] _elements = new int[triangleCount];
-    private readonly HalfEdge[] _edges = new HalfEdge[triangleCount * 3];
+    private readonly List<int> _elements = new(capacity: triangleCount);
+    private readonly List<HalfEdge> _edges = new(triangleCount * 3);
 
     public int ElementCount { get; private set; } = 0;
     public int EdgeCount { get; private set; } = 0;
 
-    public int ElementCapacity => _elements.Length;
-    public int EdgeCapacity => _edges.Length;
+    public int ElementCapacity => _elements.Capacity;
+    public int EdgeCapacity => _edges.Capacity;
     
-    public ReadOnlySpan<HalfEdge> Edges => _edges.AsSpan()[..EdgeCount];
+    public IReadOnlyList<HalfEdge> Edges => _edges;
 
     public void AddTriangle(int vertexIndex1, int vertexIndex2, int vertexIndex3)
     {
@@ -26,7 +26,7 @@ public class HalfEdgeTriangulation(int triangleCount)
         var edgeIndex2 = edgeIndex1 + 1;
         var edgeIndex3 = edgeIndex1 + 2;
 
-        _elements[ElementCount] = edgeIndex1;
+        _elements.Add(edgeIndex1);
         InsertEdge(vertexIndex1, vertexIndex2, edgeIndex1, edgeIndex3, edgeIndex2, ElementCount);
         InsertEdge(vertexIndex2, vertexIndex3, edgeIndex2, edgeIndex1, edgeIndex3, ElementCount);
         InsertEdge(vertexIndex3, vertexIndex1, edgeIndex3, edgeIndex2, edgeIndex1, ElementCount);
@@ -60,21 +60,21 @@ public class HalfEdgeTriangulation(int triangleCount)
 
         // Replace "old" triangle with Triangle 1
         _edges[oldEdgeIndex1] = new HalfEdge(oldEdge1.V1, oldEdge1.V2, newEdgeIndex2, newEdgeIndex1, oldEdge1.TwinEdge, oldEdge1.ElementIndex);
-        _edges[newEdgeIndex1] = new HalfEdge(oldEdge1.V2, newVertexIndex, oldEdgeIndex1, newEdgeIndex2, newEdgeIndex4, oldEdge1.ElementIndex);
-        _edges[newEdgeIndex2] = new HalfEdge(newVertexIndex, oldEdge1.V1, newEdgeIndex1, oldEdgeIndex1, newEdgeIndex5, oldEdge1.ElementIndex);
+        _edges.Add(new HalfEdge(oldEdge1.V2, newVertexIndex, oldEdgeIndex1, newEdgeIndex2, newEdgeIndex4, oldEdge1.ElementIndex));
+        _edges.Add(new HalfEdge(newVertexIndex, oldEdge1.V1, newEdgeIndex1, oldEdgeIndex1, newEdgeIndex5, oldEdge1.ElementIndex));
         _elements[oldEdge1.ElementIndex] = oldEdgeIndex1;
         
         // Triangle 2
         _edges[oldEdgeIndex2] = new HalfEdge(oldEdge2.V1, oldEdge2.V2, newEdgeIndex4, newEdgeIndex3, oldEdge2.TwinEdge, ElementCount);
-        _edges[newEdgeIndex3] = new HalfEdge(oldEdge2.V2, newVertexIndex, oldEdgeIndex2, newEdgeIndex4, newEdgeIndex6, ElementCount);
-        _edges[newEdgeIndex4] = new HalfEdge(newVertexIndex, oldEdge2.V1, newEdgeIndex3, oldEdgeIndex2, newEdgeIndex1, ElementCount);
-        _elements[ElementCount] = oldEdgeIndex2;
+        _edges.Add(new HalfEdge(oldEdge2.V2, newVertexIndex, oldEdgeIndex2, newEdgeIndex4, newEdgeIndex6, ElementCount));
+        _edges.Add(new HalfEdge(newVertexIndex, oldEdge2.V1, newEdgeIndex3, oldEdgeIndex2, newEdgeIndex1, ElementCount));
+        _elements.Add(oldEdgeIndex2);
         
         // Triangle 3
         _edges[oldEdgeIndex3] = new HalfEdge(oldEdge3.V1, oldEdge3.V2, newEdgeIndex6, newEdgeIndex5, oldEdge3.TwinEdge, ElementCount + 1);
-        _edges[newEdgeIndex5] = new HalfEdge(oldEdge3.V2, newVertexIndex, oldEdgeIndex3, newEdgeIndex6, newEdgeIndex2, ElementCount + 1);
-        _edges[newEdgeIndex6] = new HalfEdge(newVertexIndex, oldEdge3.V1, newEdgeIndex5, oldEdgeIndex3, newEdgeIndex3, ElementCount + 1);
-        _elements[ElementCount + 1] = oldEdgeIndex3;
+        _edges.Add(new HalfEdge(oldEdge3.V2, newVertexIndex, oldEdgeIndex3, newEdgeIndex6, newEdgeIndex2, ElementCount + 1));
+        _edges.Add(new HalfEdge(newVertexIndex, oldEdge3.V1, newEdgeIndex5, oldEdgeIndex3, newEdgeIndex3, ElementCount + 1));
+        _elements.Add(oldEdgeIndex3);
 
         ElementCount += 2;
         EdgeCount += 6;
@@ -96,21 +96,33 @@ public class HalfEdgeTriangulation(int triangleCount)
         var edgeVertex = _edges[nextEdgeIndex].V2;
         var twinVertex = _edges[nextTwinIndex].V2;
 
-        _edges[previousEdgeIndex].PrevEdge = edgeIndex;
-        _edges[previousEdgeIndex].NextEdge = nextTwinIndex;
-        _edges[previousEdgeIndex].ElementIndex = edge.ElementIndex;
-        _edges[nextTwinIndex].PrevEdge = previousEdgeIndex;
-        _edges[nextTwinIndex].NextEdge = edgeIndex;
-        _edges[nextTwinIndex].ElementIndex = edge.ElementIndex;
+        var temp =_edges[previousEdgeIndex]; 
+        temp.PrevEdge = edgeIndex;
+        temp.NextEdge = nextTwinIndex;
+        temp.ElementIndex = edge.ElementIndex;
+        _edges[previousEdgeIndex] = temp;
+        
+        temp = _edges[nextTwinIndex];
+        temp.PrevEdge = previousEdgeIndex;
+        temp.NextEdge = edgeIndex;
+        temp.ElementIndex = edge.ElementIndex;
+        _edges[nextTwinIndex] = temp;
+        
         _edges[edgeIndex] = new HalfEdge(twinVertex, edgeVertex, nextTwinIndex, previousEdgeIndex, twinIndex, edge.ElementIndex);
         _elements[edge.ElementIndex] = edgeIndex;
 
-        _edges[previousTwinIndex].PrevEdge = twinIndex;
-        _edges[previousTwinIndex].NextEdge = nextEdgeIndex;
-        _edges[previousTwinIndex].ElementIndex = twin.ElementIndex;
-        _edges[nextEdgeIndex].PrevEdge = previousTwinIndex;
-        _edges[nextEdgeIndex].NextEdge = twinIndex;
-        _edges[nextEdgeIndex].ElementIndex = twin.ElementIndex;
+        temp = _edges[previousTwinIndex];
+        temp.PrevEdge = twinIndex;
+        temp.NextEdge = nextEdgeIndex;
+        temp.ElementIndex = twin.ElementIndex;
+        _edges[previousTwinIndex] = temp;
+
+        temp = _edges[nextEdgeIndex];
+        temp.PrevEdge = previousTwinIndex;
+        temp.NextEdge = twinIndex;
+        temp.ElementIndex = twin.ElementIndex;
+        _edges[nextEdgeIndex] = temp;
+        
         _edges[twinIndex] = new HalfEdge(edgeVertex, twinVertex, nextEdgeIndex, previousTwinIndex, edgeIndex, twin.ElementIndex);
         _elements[twin.ElementIndex] = twinIndex;
     }
@@ -165,15 +177,17 @@ public class HalfEdgeTriangulation(int triangleCount)
     private void InsertEdge(int vertexIndexStart, int vertexIndexEnd, int edgeIndex, int edgeIndexPrevious, int edgeIndexNext, int elementIndex)
     {
         Debug.Assert(GetEdgeIndex(vertexIndexStart, vertexIndexEnd) == -1); // Edge already exists
-        Debug.Assert(_edges[edgeIndex] == default);
+        Debug.Assert(edgeIndex == _edges.Count);
         
         var twin = GetEdgeIndex(vertexIndexEnd, vertexIndexStart);
         if (twin >= 0)
         {
             Debug.Assert(_edges[twin].TwinEdge == -1); // Twin already has a neighbour
-            _edges[twin].TwinEdge = edgeIndex;
+            var temp = _edges[twin];
+            temp.TwinEdge = edgeIndex;
+            _edges[twin] = temp;
         }
-        _edges[edgeIndex] = new HalfEdge(vertexIndexStart, vertexIndexEnd, edgeIndexPrevious, edgeIndexNext, twin, elementIndex);
+        _edges.Add(new HalfEdge(vertexIndexStart, vertexIndexEnd, edgeIndexPrevious, edgeIndexNext, twin, elementIndex));
     }
     
     private void AssertNewTrianglesFits(int newTriangles = 1)

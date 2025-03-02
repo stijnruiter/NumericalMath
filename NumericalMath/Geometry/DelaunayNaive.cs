@@ -14,49 +14,53 @@ public interface IDelaunay
     (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh();
 
     public int FindElement(Vertex2 point);
+    public void InsertPoint(Vertex2 point);
 }
 
 internal class DelaunayNaive : IDelaunay
 {
-    private List<Vertex2> _vertices = [];
-    private List<TriangleElement> _interiorElements = [];
-    private List<LineElement> _boundaryElements = [];
+    private readonly List<Vertex2> _vertices;
+    private readonly List<TriangleElement> _interiorElements;
+    private readonly List<LineElement> _boundaryElements;
 
-    private DelaunayNaive(ReadOnlySpan<Vertex2> vertices)
+    private DelaunayNaive(Triangle boundingTriangle, int vertexCapacity)
     {
-        Initialize(vertices);
-        
-        for (int i = 3; i < _vertices.Count; i++)
+        _vertices = new List<Vertex2>(vertexCapacity + 3)
         {
-            InsertPoint(i);
-        }
-        
-        Cleanup();
-    }
-
-    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices) => new DelaunayNaive(vertices);
-
-    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh() => (_interiorElements, _boundaryElements);
-
-    private void Initialize(ReadOnlySpan<Vertex2> vertices)
-    {
-        // Create an "infinite" containing triangle
-        var containingTriangle = Triangle.ContainingTriangle(vertices.ToArray(), 1e5f);
-        _vertices =
-        [
-            containingTriangle.V1,
-            containingTriangle.V2,
-            containingTriangle.V3,
-            .. vertices,
-        ];
-        _interiorElements = [new(0, 1, 2)];
+            boundingTriangle.V1,
+            boundingTriangle.V2,
+            boundingTriangle.V3
+        };
+        _interiorElements = new List<TriangleElement>(2 * _vertices.Capacity + 1)
+        {
+            new(0, 1, 2)
+        };
         _boundaryElements = [];
     }
 
-
-    private void InsertPoint(int indexP)
+    public static IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices)
     {
-        var index = FindElement(_vertices[indexP]);
+        // Create an "infinite" containing triangle
+        var containingTriangle = Triangle.ContainingTriangle(vertices.ToArray(), 1e5f);
+        var delaunay = new DelaunayNaive(containingTriangle, vertices.Length);
+        foreach(var vertex in vertices)
+        {
+            delaunay.InsertPoint(vertex);
+        }
+        return delaunay;
+    }
+
+    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
+    {
+        Cleanup();
+        return (_interiorElements, _boundaryElements);
+    }
+
+    public void InsertPoint(Vertex2 point)
+    {
+        var indexP = _vertices.Count;
+        _vertices.Add(point);
+        var index = FindElement(point);
         var element = _interiorElements[index];
 
         // Replace ABC by ABP, ACP, BCP
