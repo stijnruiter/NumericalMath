@@ -11,6 +11,10 @@ public struct Vertex2(float x, float y)
     public float Y = y;
 
     public override string ToString() => $"({X}, {Y})";
+    public static Vertex2 operator +(Vertex2 lhs, Vertex2 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y);
+    public static Vertex2 operator -(Vertex2 lhs, Vertex2 rhs) => new(lhs.X - rhs.X, lhs.Y - rhs.Y);
+    public static Vertex2 operator *(Vertex2 lhs, float rhs) => new(lhs.X * rhs, lhs.Y * rhs);
+    public static Vertex2 operator *(float lhs, Vertex2 rhs) => rhs * lhs;
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]

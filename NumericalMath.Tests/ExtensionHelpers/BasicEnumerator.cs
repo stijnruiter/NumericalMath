@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using NumericalMath.Geometry.Structures;
 
 namespace NumericalMath.Tests.ExtensionHelpers;
 
@@ -20,5 +23,10 @@ public static class EnumeratorExtensions
         {
             yield return enumerator.Current;
         }
+    }
+    
+    public static Vertex2[] GenerateRandomVertex2(this Random random, int n)
+    {
+        return Enumerable.Repeat(new Vertex2(random.NextSingle(), random.NextSingle()), n).ToArray();
     }
 }

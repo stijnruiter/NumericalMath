@@ -65,6 +65,6 @@ internal static class ThrowHelper
     internal static void ThrowIfEmpty<T>(IRectanglarMatrix<T> matrix) where T : struct, INumber<T>
     {
         if (matrix.ColumnCount == 0 || matrix.RowCount == 0)
-            throw new Exception($"RectanglarMatrix is empty. {matrix.RowCount}x{matrix.ColumnCount}");
+            throw new Exception($"RectangularMatrix is empty. {matrix.RowCount}x{matrix.ColumnCount}");
     }
 }

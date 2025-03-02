@@ -36,6 +36,39 @@ public class VertexTests
     }
 
     [Test]
+    public void Vertex2Sum_WhenTwoVertices_ShouldReturnLinearAlgebraVectorSum()
+    {
+        var vertex1 = new Vertex2(1, 2);
+        var vertex2 = new Vertex2(3, 5);
+        var zeroVertex = new Vertex2(0, 0);
+        Assert.That(vertex1 + vertex2, Is.EqualTo(new Vertex2(4, 7)));
+        Assert.That(vertex1 + zeroVertex, Is.EqualTo(vertex1));
+    }
+    
+    [Test]
+    public void Vertex2Subtract_WhenTwoVertices_ShouldReturnLinearAlgebraVectorSubtract()
+    {
+        var vertex1 = new Vertex2(1, 2);
+        var vertex2 = new Vertex2(3, 5);
+        var zeroVertex = new Vertex2(0, 0);
+        Assert.That(vertex1 - vertex2, Is.EqualTo(new Vertex2(-2, -3)));
+        Assert.That(vertex1 - zeroVertex, Is.EqualTo(vertex1));
+    }
+        
+    [Test]
+    public void Vertex2ScalarProduct_WhenCalled_ShouldReturnLinearAlgebraScalarVectorProduct()
+    {
+        Assert.That(new Vertex2(1, 2) * 2, Is.EqualTo(new Vertex2(2, 4)));
+        Assert.That(2 * new Vertex2(1, 2), Is.EqualTo(new Vertex2(2, 4)));
+        
+        Assert.That(new Vertex2(1, 2) * -2, Is.EqualTo(new Vertex2(-2, -4)));
+        Assert.That(-2 * new Vertex2(1, 2), Is.EqualTo(new Vertex2(-2, -4)));
+        
+        Assert.That(new Vertex2(0, 0) * -10, Is.EqualTo(new Vertex2(0, 0)));
+        Assert.That(-2 * new Vertex2(0, 0), Is.EqualTo(new Vertex2(0, 0)));
+    }
+
+    [Test]
     public void Vertex3Constructor_WhenUsingDefaultArguments_ShouldHaveOriginVertex2()
     {
         var vertex3 = new Vertex3();
