@@ -1,5 +1,6 @@
 ﻿using NumericalMath.LinearAlgebra;
 using NumericalMath.LinearAlgebra.Structures;
+using NUnit.Framework;
 
 namespace NumericalMath.Tests.LinearAlgebra;
 

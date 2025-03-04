@@ -47,13 +47,13 @@ public class DelaunaySubroutines
     }
 
     [Benchmark(Baseline = true)]
-    public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayDefault()
+    public (List<Vertex2> Vertices, List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayDefault()
     {
         return DelaunayNaive.CreateTriangulation(_vertices).ToMesh();
     }
 
     [Benchmark]
-    public (List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayOptimized()
+    public (List<Vertex2> Vertices, List<TriangleElement> Interior, List<LineElement> Boundary) DelaunayOptimized()
     {
         return Delaunay.CreateTriangulation(_vertices).ToMesh();
     }

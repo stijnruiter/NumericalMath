@@ -1,6 +1,8 @@
 ﻿using NumericalMath.Geometry;
 using NumericalMath.Geometry.Structures;
 using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 
 namespace NumericalMath.Tests.Geometry;
 
@@ -153,8 +155,50 @@ public class DelaunayTests<T> where T : IDelaunay
 
         Assert.That(() => delaunay.FindElement(new Vertex2(1e10f, 1e10f)), Throws.Exception);
     }
+
+    public static IEnumerable<TestCaseData> SmallestAngleTriangulations()
+    {
+        var vertices = new[] { new Vertex2(0, 0), new Vertex2(1, 0), new Vertex2(0, 2) };
+        var expectedSmallest = new Triangle(vertices[0], vertices[1], vertices[2]);
+        yield return new TestCaseData(vertices, expectedSmallest).SetArgDisplayNames($"{vertices.Length} vertices");
+
+        vertices = new[] { new Vertex2(0, 0), new Vertex2(1, 0), new Vertex2(0, 2), new Vertex2(8, 8)};
+        expectedSmallest = new Triangle(vertices[1], vertices[3], vertices[2]);
+        yield return new TestCaseData(vertices, expectedSmallest).SetArgDisplayNames($"{vertices.Length} vertices");
+        
+        vertices = new[] { new Vertex2(0, 0), new Vertex2(1, 0), new Vertex2(0, 2), new Vertex2(3, 2), new(4,0), new Vertex2(8, 8)};
+        expectedSmallest = new Triangle(vertices[3], vertices[4], vertices[5]);
+        yield return new TestCaseData(vertices, expectedSmallest).SetArgDisplayNames($"{vertices.Length} vertices");
+    }
     
-    private static bool AreCyclicalIdentical(TriangleElement element1, TriangleElement element2)
+    [TestCaseSource(nameof(SmallestAngleTriangulations))]
+    public void GetSmallestAngleTriangle_WhenDelaunay_ShouldReturnSmallestTriangle(Vertex2[] vertices, Triangle expectedSmallest)
+    {
+        IDelaunay delaunay = T.CreateTriangulation(vertices);
+        Assert.That(delaunay.GetSmallestAngleTriangle(), Is.EqualTo(expectedSmallest).Using<Triangle>(AreCyclicalIdentical));
+    }
+    
+    [TestCaseSource(nameof(SmallestAngleTriangulations))]
+    public void Vertices_WhenDelaunayGenerated_ShouldReturnSmallestTriangleIncludingBoundingTriangle(Vertex2[] vertices, Triangle _)
+    {
+        IDelaunay delaunay = T.CreateTriangulation(vertices);
+        Assert.That(delaunay.Vertices, Has.Count.EqualTo(vertices.Length + 3));
+        Assert.That(delaunay.Vertices.Skip(3), Is.EqualTo(vertices));
+    }
+    
+    private static bool AreCyclicalIdentical(Triangle element1, Triangle element2)
+    {
+        return (ApproxEquals(element1.V1, element2.V1) && ApproxEquals(element1.V2, element2.V2) && ApproxEquals(element1.V3, element2.V3)) ||
+               (ApproxEquals(element1.V1, element2.V2) && ApproxEquals(element1.V2, element2.V3) && ApproxEquals(element1.V3, element2.V1)) ||
+               (ApproxEquals(element1.V1, element2.V3) && ApproxEquals(element1.V2, element2.V1) && ApproxEquals(element1.V3, element2.V2));
+
+        bool ApproxEquals(Vertex2 v1, Vertex2 v2)
+        {
+            return Vertex2.DotProduct(v1 - v2, v1 - v2) < Constants.DefaultFloatTolerance * Constants.DefaultFloatTolerance;
+        }
+    }
+    
+    public static bool AreCyclicalIdentical(TriangleElement element1, TriangleElement element2)
     {
         return (element1.I == element2.I && element1.J == element2.J && element1.K == element2.K) ||
                (element1.I == element2.J && element1.J == element2.K && element1.K == element2.I) ||

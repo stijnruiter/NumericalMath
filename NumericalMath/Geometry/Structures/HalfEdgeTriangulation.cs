@@ -20,8 +20,6 @@ public class HalfEdgeTriangulation(int triangleCount)
 
     public void AddTriangle(int vertexIndex1, int vertexIndex2, int vertexIndex3)
     {
-        AssertNewTrianglesFits(1);
-        
         var edgeIndex1 = EdgeCount;
         var edgeIndex2 = edgeIndex1 + 1;
         var edgeIndex3 = edgeIndex1 + 2;
@@ -37,8 +35,6 @@ public class HalfEdgeTriangulation(int triangleCount)
 
     public int[] RefineTriangle(int triangleIndex, int newVertexIndex)
     {
-        AssertNewTrianglesFits(2);
-
         var oldEdgeIndex1 = _elements[triangleIndex];
         var oldEdge1 = _edges[oldEdgeIndex1];
         
@@ -190,12 +186,6 @@ public class HalfEdgeTriangulation(int triangleCount)
         _edges.Add(new HalfEdge(vertexIndexStart, vertexIndexEnd, edgeIndexPrevious, edgeIndexNext, twin, elementIndex));
     }
     
-    private void AssertNewTrianglesFits(int newTriangles = 1)
-    {
-        if (ElementCount + newTriangles > ElementCapacity && EdgeCount + newTriangles * 3 > EdgeCapacity)
-            throw new Exception("Capacity exceeded");
-    }
-
     private int GetEdgeIndex(int vStart, int vEnd)
     {
         for (int i = 0; i < EdgeCount; i++)

@@ -5,7 +5,7 @@ using NumericalMath.LinearAlgebra.Structures;
 
 namespace NumericalMath.LinearAlgebra;
 
-internal class InternalArithmetics
+internal static class InternalArithmetics
 {
     private static bool OperationCanBeVectorized<T>(AbstractVector<T> lhs, AbstractVector<T> rhs) where T : struct, INumber<T>
     {

@@ -9,9 +9,11 @@ namespace NumericalMath.Geometry;
 
 public interface IDelaunay
 {
+    public Triangle GetSmallestAngleTriangle();
+    public IReadOnlyList<Vertex2> Vertices { get; }
     static abstract float InCircleDeterminant(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d);
     static abstract IDelaunay CreateTriangulation(ReadOnlySpan<Vertex2> vertices);
-    (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh();
+    (List<Vertex2> Vertices, List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh();
 
     public int FindElement(Vertex2 point);
     public void InsertPoint(Vertex2 point);
@@ -22,7 +24,7 @@ internal class DelaunayNaive : IDelaunay
     private readonly List<Vertex2> _vertices;
     private readonly List<TriangleElement> _interiorElements;
     private readonly List<LineElement> _boundaryElements;
-
+    
     private DelaunayNaive(Triangle boundingTriangle, int vertexCapacity)
     {
         _vertices = new List<Vertex2>(vertexCapacity + 3)
@@ -50,10 +52,10 @@ internal class DelaunayNaive : IDelaunay
         return delaunay;
     }
 
-    public (List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
+    public (List<Vertex2> Vertices, List<TriangleElement> Interior, List<LineElement> Boundary) ToMesh()
     {
         Cleanup();
-        return (_interiorElements, _boundaryElements);
+        return (_vertices[3..], _interiorElements, _boundaryElements);
     }
 
     public void InsertPoint(Vertex2 point)
@@ -126,6 +128,39 @@ internal class DelaunayNaive : IDelaunay
     {
         return InCircleDeterminant(_vertices[ai], _vertices[bi], _vertices[ci], _vertices[di]) > 0;
     }
+
+    public Triangle GetSmallestAngleTriangle()
+    {
+        Triangle? smallestAngleTriangle = null;
+        float smallestAngle = float.MaxValue;
+        foreach (var element in _interiorElements)
+        {
+            if (element.I < 3 || element.J < 3 || element.K < 3)
+                continue;
+
+            var triangle = GetTriangle(element);
+            var angle = triangle.GetSmallestAngle();
+
+            if (angle < smallestAngle)
+            {
+                smallestAngle = angle;
+                smallestAngleTriangle = triangle;
+            }
+        }
+
+        return smallestAngleTriangle!.Value;
+
+        Triangle GetTriangle(TriangleElement element)
+        {
+            var v1 = _vertices[element.I];
+            var v2 = _vertices[element.J];
+            var v3 = _vertices[element.K];
+            return new Triangle(v1, v2, v3);
+        }
+    }
+    
+
+    public IReadOnlyList<Vertex2> Vertices => _vertices;
 
     public static float InCircleDeterminant(Vertex2 a, Vertex2 b, Vertex2 c, Vertex2 d)
     {

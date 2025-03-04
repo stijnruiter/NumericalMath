@@ -21,4 +21,7 @@ public static class CompareMethods
 
     public static bool ApproxEquals(this IRectanglarMatrix<float> left, IRectanglarMatrix<float> right, float tolerance = Constants.DefaultFloatTolerance) => left.ApproxEquals<float>(right, tolerance);
     public static bool ApproxEquals(this IRectanglarMatrix<double> left, IRectanglarMatrix<double> right, double tolerance = Constants.DefaultDoubleTolerance) => left.ApproxEquals<double>(right, tolerance);
+    public static float[] ToFloats(this (float, float, float) tuple) => [tuple.Item1, tuple.Item2, tuple.Item3];
+    
+    
 }

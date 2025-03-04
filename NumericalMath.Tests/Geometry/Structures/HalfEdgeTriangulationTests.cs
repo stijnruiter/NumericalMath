@@ -18,18 +18,6 @@ public class HalfEdgeTriangulationTests
     }
     
     [Test]
-    public void AddTriangle_WhenExceedingTheMaximumCapacity_ShouldThrow()
-    {
-        var halfEdges = new HalfEdgeTriangulation(5);
-        halfEdges.AddTriangle(0, 1, 2);
-        halfEdges.AddTriangle(1, 3, 2);
-        halfEdges.AddTriangle(3, 4, 2);
-        halfEdges.AddTriangle(1, 5, 3);
-        halfEdges.AddTriangle(5, 6, 3);
-        Assert.That(() => halfEdges.AddTriangle(3, 6, 7), Throws.Exception);
-    }
-    
-    [Test]
     public void AddTriangle_WhenAddingTwoTriangles_ShouldReturnSixEdges()
     {
         HalfEdgeTriangulation halfEdges = new HalfEdgeTriangulation(2);
