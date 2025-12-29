@@ -111,13 +111,13 @@ public class PlyFile
                         var list = Array.CreateInstance(prop.DataType, count);
                         for (var j = 0; j < count; j++)
                         {
-                            list.SetValue(Convert.ChangeType(tokens[index++], prop.DataType), j);
+                            list.SetValue(prop.Parse(tokens[index++]), j);
                         }
                         values.Add(list);
                     }
                     else
                     {
-                        values.Add(Convert.ChangeType(tokens[index++], prop.DataType));
+                        values.Add(prop.Parse(tokens[index++]));
                     }
                 }
 
